@@ -1,0 +1,9 @@
+[package]
+
+name = "vexyz_math"
+version = "0.0.1"
+authors = [ "Aleksey Nikiforov <aleksey@example.com>" ]
+
+[[bin]]
+
+name = "vexyz_math_run"
