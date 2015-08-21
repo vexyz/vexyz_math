@@ -4,6 +4,10 @@ pub fn vec_getter(i: usize) -> String {
     format!("[{}]", i)
 }
 
+pub fn quat_getter(i: usize) -> String {
+    format!("[{}]", i)
+}
+
 pub fn mat_getter(i: usize) -> String {
     format!("[{}]", i)
 }
@@ -12,6 +16,7 @@ pub fn mat_getter(i: usize) -> String {
 pub enum Type {
     Bool,
     I32,
+    Usize,
     F64,
 }
 
@@ -20,6 +25,7 @@ impl Type {
         match *self {
             Type::Bool => "boolean".to_string(),
             Type::I32 => "integer".to_string(),
+            Type::Usize => "pointer-sized unsigned integer".to_string(),
             Type::F64 => "floating point".to_string(),
         }
     }
@@ -30,6 +36,7 @@ impl Display for Type {
         match *self {
             Type::Bool => write!(formatter, "bool"),
             Type::I32 => write!(formatter, "i32"),
+            Type::Usize => write!(formatter, "usize"),
             Type::F64 => write!(formatter, "f64"),
         }
     }

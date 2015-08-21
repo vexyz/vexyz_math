@@ -1,4 +1,4 @@
-use common::*;
+use gen_common::*;
 use util::*;
 use vec_common;
 use vec_common::VecGen;
@@ -8,20 +8,20 @@ pub fn gen_bool_vector(n: usize) -> String {
         struct_name: format!("Vec{}b", n),
         tpe: Type::Bool,
         dims: n,
-        builder_macro_name: format!("bvec{}", n),
+        macro_builder_name: format!("bvec{}", n),
         all_ordinals: &vec_common::XYZW,
         doc_name: "vector".to_string(),
         val_name: "u".to_string(),
         quaternion_override: false,
     };
-    template_main(gen)
+    template_file(gen)
 }
 
-fn template_main(gen: &VecGen) -> String { format! {"\
+fn template_file(gen: &VecGen) -> String { format! {"\
 // Generated code.
 {imports}
 
-{struct_def}
+{template_struct}
 
 {template_struct_impl}
 
@@ -32,7 +32,7 @@ fn template_main(gen: &VecGen) -> String { format! {"\
 {macro_builder}
 ",
     imports = vec_common::IMPORTS,
-    struct_def = vec_common::struct_def(gen, vec_common::doc_vec_struct(gen)),
+    template_struct = vec_common::template_struct(gen, vec_common::doc_vec_struct(gen)),
     template_struct_impl = vec_common::template_struct_impl(gen, "".to_string()),
     op_index = vec_common::op_index(gen),
     template_boolean_ops = template_boolean_ops(gen),
