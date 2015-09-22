@@ -6,7 +6,9 @@ use mat_ops::*;
 use util::*;
 use std::iter::*;
 
-pub static IMPORTS: &'static str = "use std::ops::*;";
+pub static IMPORTS: &'static str = "\
+use std::fmt::{Display, Formatter, Result};
+use std::ops::*;";
 
 pub fn gen_matrix(n: usize) -> String {
     let gen = &MatGen {
@@ -29,17 +31,22 @@ fn template_file(gen: &MatGen) -> String { format! {"\
 
 {template_struct_impl}
 
-{op_index}
+{template_methods}
 
-{template_num_ops}
+{trait_display}
+
+{template_ops}
 
 {macro_builder}
 ",
     imports = format!("{sized}\n{base}", sized = gen.sized_imports(), base = IMPORTS),
     template_struct = template_struct(gen),
     template_struct_impl = template_struct_impl(gen),
-    op_index = op_index(gen),
-    template_num_ops = template_num_ops(gen),
+    template_methods = template_methods(gen, &gen.struct_name, &gen.struct_name, vec!(
+        method_lerp(gen),
+    )),
+    trait_display = trait_display(gen),
+    template_ops = template_ops(gen),
     macro_builder = macro_builder(gen),
 }}
 
@@ -67,11 +74,11 @@ fn template_struct_impl(gen: &MatGen) -> String { format! {"\
 impl {struct_name} {{
     {fn_new}
     
-    {fn_transpose}
+    {template_postfix}
 }}",
     struct_name = gen.struct_name,
     fn_new = fn_new(gen),
-    fn_transpose = fn_transpose(gen),
+    template_postfix = template_postfix(gen),
 }}
 
 fn fn_new(gen: &MatGen) -> String { format! {"\
@@ -82,6 +89,17 @@ fn fn_new(gen: &MatGen) -> String { format! {"\
     struct_name = gen.struct_name,
     args = gen.cols().map(|col| format!("{}: {}", col, gen.col_tpe)).concat(", "),
     body = gen.cols().concat(", "),
+}}
+
+pub fn trait_display(gen: &MatGen) -> String { format! {"\
+impl Display for {struct_name} {{
+    fn fmt(&self, f: &mut Formatter) -> Result {{
+    	write!(f, \"{struct_name}({tokens})\", {body})
+    }}
+}}",
+    struct_name = gen.struct_name,
+    tokens = (0..gen.nr_cols).map(|_| "{}".to_string()).concat(", "),
+    body = (0..gen.nr_cols).map(|c| format!("self{}", mat_getter(c))).concat(", "),
 }}
 
 fn macro_builder(gen: &MatGen) -> String { format! { "\

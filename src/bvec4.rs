@@ -1,4 +1,5 @@
 // Generated code.
+use std::fmt::{Display, Formatter, Result};
 use std::ops::*;
 
 /// 4-dimensional vector with boolean `x`, `y`, `z`, and `w` components.
@@ -42,7 +43,62 @@ impl Vec4b {
     /// Color-style component accessor, returns the 4th component of the vector.
     #[inline(always)] pub fn a(&self) -> bool { self[3] }
 	
+	/// Returns true if all components of the vector are true, false otherwise.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// #[macro_use] extern crate vexyz_math;
+    /// use vexyz_math::*;
+    ///
+    /// # fn main() {
+    /// assert!(bvec4!(true, true, true, true).all());
+    /// assert!(!bvec4!(true, false, true, true).all());
+    /// # }
+    /// ```
+	pub fn all(&self) -> bool {
+		self[0] && self[1] && self[2] && self[3]
+	}
 	
+	/// Returns true if at least one of the vector components is true, false otherwise.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// #[macro_use] extern crate vexyz_math;
+    /// use vexyz_math::*;
+    ///
+    /// # fn main() {
+    /// assert!(bvec4!(false, true, false, false).any());
+    /// assert!(!bvec4!(false, false, false, false).any());
+    /// # }
+    /// ```
+	pub fn any(&self) -> bool {
+		self[0] || self[1] || self[2] || self[3]
+	}
+	
+	/// Performs component-wise negation of the vector, returning a new vector.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// #[macro_use] extern crate vexyz_math;
+    /// use vexyz_math::*;
+    ///
+    /// # fn main() {
+    /// let u = bvec4!(true, false, true, false);
+    /// assert_eq!(u.not(), bvec4!(false, true, false, true));
+    /// # }
+    /// ```
+	pub fn not(&self) -> Vec4b {
+		Vec4b::new(!self[0], !self[1], !self[2], !self[3])
+	}
+}
+
+impl Display for Vec4b {
+    fn fmt(&self, f: &mut Formatter) -> Result {
+    	write!(f, "Vec4b({}, {}, {}, {})", self[0], self[1], self[2], self[3])
+    }
 }
 
 impl Index<usize> for Vec4b {
@@ -74,7 +130,7 @@ impl<'a, 'b> BitAnd<&'b Vec4b> for &'a Vec4b {
     type Output = Vec4b;
 
     /// Performs logical *and* between each component of the `lhs` vector
-    /// and the corresponding component of the `rhs` vector producing a new vector.
+    /// and the corresponding component of the `rhs` vector, producing a new vector.
     ///
     /// # Examples
     ///
@@ -123,7 +179,7 @@ impl<'a> BitAnd<bool> for &'a Vec4b {
     type Output = Vec4b;
     
     /// Performs logical *and* between each component of a vector
-    /// and a scalar producing a new vector.
+    /// and a scalar, producing a new vector.
     ///
     /// # Examples
     ///
@@ -154,7 +210,7 @@ impl<'a, 'b> BitOr<&'b Vec4b> for &'a Vec4b {
     type Output = Vec4b;
 
     /// Performs logical *or* between each component of the `lhs` vector
-    /// and the corresponding component of the `rhs` vector producing a new vector.
+    /// and the corresponding component of the `rhs` vector, producing a new vector.
     ///
     /// # Examples
     ///
@@ -203,7 +259,7 @@ impl<'a> BitOr<bool> for &'a Vec4b {
     type Output = Vec4b;
     
     /// Performs logical *or* between each component of a vector
-    /// and a scalar producing a new vector.
+    /// and a scalar, producing a new vector.
     ///
     /// # Examples
     ///
@@ -234,7 +290,7 @@ impl<'a, 'b> BitXor<&'b Vec4b> for &'a Vec4b {
     type Output = Vec4b;
 
     /// Performs logical *xor* between each component of the `lhs` vector
-    /// and the corresponding component of the `rhs` vector producing a new vector.
+    /// and the corresponding component of the `rhs` vector, producing a new vector.
     ///
     /// # Examples
     ///
@@ -283,7 +339,7 @@ impl<'a> BitXor<bool> for &'a Vec4b {
     type Output = Vec4b;
     
     /// Performs logical *xor* between each component of a vector
-    /// and a scalar producing a new vector.
+    /// and a scalar, producing a new vector.
     ///
     /// # Examples
     ///
@@ -313,7 +369,7 @@ impl BitXor<bool> for Vec4b {
 impl<'a> Not for &'a Vec4b {
     type Output = Vec4b;
     
-    /// Applies logical negation to each component of a vector producing a new vector.
+    /// Applies logical negation to each component of a vector, producing a new vector.
     ///
     /// # Examples
     ///

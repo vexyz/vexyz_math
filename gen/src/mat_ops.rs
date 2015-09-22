@@ -40,7 +40,9 @@ impl Index<usize> for {struct_name} {{
     example_res = (0..gen.nr_cols).map(|i| format!("m[{}]", i)).concat(", "),
 }}
 
-pub fn template_num_ops(gen: &MatGen) -> String { format! { "\
+pub fn template_ops(gen: &MatGen) -> String { format! { "\
+{op_index}
+
 {op_add_mat}
 
 {op_add_scalar}
@@ -60,6 +62,8 @@ pub fn template_num_ops(gen: &MatGen) -> String { format! { "\
 {op_div_scalar}
 
 {op_neg}",
+    op_index = op_index(gen),
+
     op_add_mat = template_op_bin_mat(gen, "Add", "add", "+",
         "Performs component-wise addition of two matrices"),
     
@@ -169,7 +173,7 @@ impl<'a, 'b> Mul<&'b {struct_name}> for &'a {struct_name} {{
     /// let c = {macro_builder}!(
     ///     {example_res},
     /// );
-    /// assert_eq!(a * b, c);//XXX fix this
+    /// assert_eq!(a * b, c);
     /// # }}
     /// ```
     fn mul(self, rhs: &{struct_name}) -> {struct_name} {{
@@ -194,10 +198,12 @@ impl<'a, 'b> Mul<&'b {struct_name}> for &'a {struct_name} {{
     example_lhs_args = (0..gen.nr_cols).map(|i| gen.lhs_col(i)).concat(",\n    ///     "),
     example_rhs_args = (0..gen.nr_cols).map(|i| gen.rhs_col(i)).concat(",\n    ///     "),
     example_res = (0..gen.nr_cols).map(|c|
-        (0..gen.nr_rows).map(|r| format!("{lhs} * {rhs}",
-            lhs = gen.lhs(c, r), rhs = gen.rhs(c, r)
-        )).concat(", "),
-    ).concat(",\n    ///     "),
+        (0..gen.nr_rows).map(|r|
+            (0..gen.nr_rows).map(|i| format!("{lhs}*{rhs}",
+                lhs = gen.lhs(i, r), rhs = gen.rhs(c, i)
+            )).concat(" + ")
+        ).concat(",\n    ///     ")
+    ).concat(",\n    ///\n    ///     "),
     shorthands = shorthands_bin_op_ref(
         "Mul", "mul", "*", &gen.struct_name, &gen.struct_name, &gen.struct_name
     ),
@@ -219,13 +225,11 @@ impl<'a, 'b> Mul<&'b {col_tpe}> for &'a {struct_name} {{
     /// let a = {macro_builder}!(
     ///     {example_lhs_args},
     /// );
-    /// let b = {macro_builder}!(
-    ///     {example_rhs_args},
-    /// );
-    /// let c = {macro_builder}!(
+    /// let u = {row_builder}!({example_rhs_args});
+    /// let v = {row_builder}!(
     ///     {example_res},
     /// );
-    /// assert_eq!(a * b, c);//XXX fix this
+    /// assert_eq!(a * u, v);
     /// # }}
     /// ```
     fn mul(self, rhs: &{col_tpe}) -> {col_tpe} {{
@@ -238,17 +242,18 @@ impl<'a, 'b> Mul<&'b {col_tpe}> for &'a {struct_name} {{
 
 {shorthands}",
     macro_builder = gen.macro_builder_name,
+    row_builder = gen.col_builder,
     struct_name = gen.struct_name,
     col_tpe = gen.col_tpe,
     body = (0..gen.nr_rows).map(|r| format!(
         "t{col_r}.dot(rhs)", col_r = mat_getter(r),
     )).concat(", "),
     example_lhs_args = (0..gen.nr_cols).map(|i| gen.lhs_col(i)).concat(",\n    ///     "),
-    example_rhs_args = (0..gen.nr_cols).map(|i| gen.rhs_col(i)).concat(",\n    ///     "),
-    example_res = (0..gen.nr_cols).map(|c|
-        (0..gen.nr_rows).map(|r| format!("{lhs} * {rhs}",
-            lhs = gen.lhs(c, r), rhs = gen.rhs(c, r)
-        )).concat(", "),
+    example_rhs_args = gen.rhs_col(0),
+    example_res = (0..gen.nr_rows).map(|r|
+        (0..gen.nr_rows).map(|i| format!("{lhs}*{rhs}",
+            lhs = gen.lhs(i, r), rhs = gen.rhs(0, i)
+        )).concat(" + ")
     ).concat(",\n    ///     "),
     shorthands = shorthands_bin_op_ref(
         "Mul", "mul", "*", &gen.struct_name, &gen.col_tpe, &gen.col_tpe

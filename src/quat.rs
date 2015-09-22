@@ -1,5 +1,10 @@
 // Generated code.
+use std::fmt::{Display, Formatter, Result};
 use std::ops::*;
+use Vec3;
+use Vec3Ops;
+use Vec4;
+use Vec4Ops;
 
 /// Quaternion with 4 floating-point components `a`, `b`, `c`, and `d`.
 /// Unit quaternions represent rotation.
@@ -55,6 +60,241 @@ impl Quat {
     pub fn sum(&self) -> f64 {
         self[0] + self[1] + self[2] + self[3]
     }
+	
+	/// Performs `abs()` on each component, producing a new vector.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// #[macro_use] extern crate vexyz_math;
+    /// use vexyz_math::*;
+    ///
+    /// # fn main() {
+    /// let u = quat!(20, -30, 40, -50);
+    /// assert_eq!(u.abs(), quat!(20, 30, 40, 50));
+    /// # }
+    /// ```
+    pub fn abs(&self) -> Quat {
+        Quat::new(self[0].abs(), self[1].abs(), self[2].abs(), self[3].abs())
+    }
+    
+    /// Returns combined rotation of the `lhs` quaternion followed by rotation around `x` axis.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// #[macro_use] extern crate vexyz_math;
+    /// use vexyz_math::*;
+    ///
+    /// # fn main() {
+    /// //XXX add test
+    /// # }
+    /// ```
+	pub fn rotate_x(&self, rads: f64) -> Quat {
+		let half_angle = rads*0.5;
+        let qa = half_angle.cos();
+        let qb = half_angle.sin();
+    
+    	self*qa + Quat::new(-qb*self[1], qb*self[0], -qb*self[3], qb*self[2])
+	}
+	
+	/// Returns combined rotation of the `lhs` quaternion followed by rotation around `y` axis.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// #[macro_use] extern crate vexyz_math;
+    /// use vexyz_math::*;
+    ///
+    /// # fn main() {
+    /// //XXX add test
+    /// # }
+    /// ```
+	pub fn rotate_y(&self, rads: f64) -> Quat {
+		let half_angle = rads*0.5;
+        let qa = half_angle.cos();
+        let qc = half_angle.sin();
+    
+        self*qa + Quat::new(-qc*self[2], qc*self[3], qc*self[0], -qc*self[1])
+	}
+	
+	/// Returns combined rotation of the `lhs` quaternion followed by rotation around `z` axis.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// #[macro_use] extern crate vexyz_math;
+    /// use vexyz_math::*;
+    ///
+    /// # fn main() {
+    /// //XXX add test
+    /// # }
+    /// ```
+	pub fn rotate_z(&self, rads: f64) -> Quat {
+		let half_angle = rads*0.5;
+        let qa = half_angle.cos();
+        let qd = half_angle.sin();
+    
+        self*qa + Quat::new(-qd*self[3], -qd*self[2], qd*self[1], qd*self[0])
+	}
+    
+    /// Extracts quaternion components into a vector: `Quat(a, b, c, d) -> Vec4(b, c, d, a)`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// #[macro_use] extern crate vexyz_math;
+    /// use vexyz_math::*;
+    ///
+    /// # fn main() {
+    /// let q = quat!(2, 3, 4, 5);
+    /// assert_eq!(q.as_vec4(), vec4!(3, 4, 5, 2));
+    /// # }
+    /// ```
+	pub fn as_vec4(&self) -> Vec4 {
+		Vec4::new(self[1], self[2], self[3], self[0])
+	}
+    
+    /// Computes the norm of the quaternion (similar to vector length).
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// #[macro_use] extern crate vexyz_math;
+    /// use vexyz_math::*;
+    ///
+    /// # fn main() {
+    /// let u = quat!(20, 30, 40, 50);
+    /// assert_eq!(u.length(), ((20*20 + 30*30 + 40*40 + 50*50) as f64).sqrt());
+    /// # }
+    /// ```
+	pub fn length(&self) -> f64 {
+		self.as_vec4().length()
+	}
+    
+    /// Normalizes the quaternion.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// #[macro_use] extern crate vexyz_math;
+    /// use vexyz_math::*;
+    ///
+    /// # fn main() {
+    /// let q = quat!(20, 30, 40, 50);
+    /// assert!(q.normalize().norm().approx_equal(1.0, 1e-8));
+    /// # }
+    /// ```
+	pub fn normalize(&self) -> Quat {
+		Quat::new(self[1], self[2], self[3], self[0])
+	}
+}
+
+pub trait QuatQuatOps<Rhs> {
+    fn approx_equal(&self, rhs: Rhs, eps: f64) -> bool;
+
+    fn rotate(&self, rhs: Rhs) -> Quat;
+}
+
+impl<'a> QuatQuatOps<&'a Quat> for Quat {
+    /// Tests for approximate equality within given absolute error.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// #[macro_use] extern crate vexyz_math;
+    /// use vexyz_math::*;
+    ///
+    /// # fn main() {
+    /// let q = quat!(20, 30, 40, 50);
+    /// assert!(q.approx_equal(q + quat!(1e-9, 1e-9, 1e-9, 1e-9), 1e-8));
+    /// assert!(!q.approx_equal(q + quat!(1e-8, 1e-8, 1e-8, 1e-8), 1e-8));
+    /// # }
+    /// ```
+    fn approx_equal(&self, rhs: &Quat, eps: f64) -> bool {
+    	self.as_vec4().approx_equal(rhs.as_vec4(), eps)
+    }
+
+    /// Returns combined rotation of the `lhs` quaternion followed by `rhs` quaternion.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// #[macro_use] extern crate vexyz_math;
+    /// use vexyz_math::*;
+    ///
+    /// # fn main() {
+    /// //XXX add test
+    /// # }
+    /// ```
+	fn rotate(&self, rhs: &Quat) -> Quat {
+		rhs*self
+	}
+}
+
+impl QuatQuatOps<Quat> for Quat {
+	/// Shorthand for `lhs.approx_equals(&rhs, eps)`.
+    #[inline(always)] fn approx_equal(&self, rhs: Quat, eps: f64) -> bool {
+        self.approx_equal(&rhs, eps)
+    }
+
+    /// Shorthand for `lhs.rotate(&rhs)`.
+    #[inline(always)] fn rotate(&self, rhs: Quat) -> Quat {
+        self.rotate(&rhs)
+    }
+}
+
+pub trait QuatVec3Ops<Rhs> {
+    fn rotate_vec(&self, rhs: Rhs) -> Vec3;
+}
+
+impl<'a> QuatVec3Ops<&'a Vec3> for Quat {
+    /// Applies rotation to the vector returning a new vector.
+	/// XXX Add 'rotations are oder dependent' in all docs.
+	/// XXX Add note about normalization in all docs.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// #[macro_use] extern crate vexyz_math;
+    /// use vexyz_math::*;
+    ///
+    /// # fn main() {
+    /// let q = quat!().rotate_z(90.ro_radians());
+    /// let u = q.rotate_vec(vec3!(1, 0, 1));
+    /// assert!(u.approx_equal(vec3!(0, 1, 1), 1e-8));
+    /// # }
+    /// ```
+	fn rotate_vec(&self, rhs: &Vec3) -> Vec3 {
+		let t1 = self[0]*self[1];
+        let t2 = self[0]*self[2];
+        let t3 = self[0]*self[3];
+        let t4 = -self[1]*self[1];
+        let t5 = self[1]*self[2];
+        let t6 = self[1]*self[3];
+        let t7 = -self[2]*self[2];
+        let t8 = self[2]*self[3];
+        let t9 = -self[3]*self[3];
+    
+        Vec3::new(
+              Vec3::new(t7 + t9, t5 - t3, t2 + t6).dot(rhs),
+              Vec3::new(t3 + t5, t4 + t9, t8 - t1).dot(rhs),
+              Vec3::new(t6 - t2, t1 + t8, t4 + t7).dot(rhs),
+        )*2.0 + rhs
+	}
+}
+
+impl QuatVec3Ops<Vec3> for Quat {
+	/// Shorthand for `lhs.rotate_vec(&rhs)`.
+    #[inline(always)] fn rotate_vec(&self, rhs: Vec3) -> Vec3 {
+        self.rotate_vec(&rhs)
+    }
+}
+
+impl Display for Quat {
+    fn fmt(&self, f: &mut Formatter) -> Result {
+    	write!(f, "Quat({}, {}, {}, {})", self[0], self[1], self[2], self[3])
+    }
 }
 
 impl Index<usize> for Quat {
@@ -85,7 +325,7 @@ impl Index<usize> for Quat {
 impl<'a, 'b> Add<&'b Quat> for &'a Quat {
     type Output = Quat;
 
-    /// Performs component-wise addition of two quaternions producing a new quaternion.
+    /// Performs component-wise addition of two quaternions, producing a new quaternion.
     ///
     /// # Examples
     ///
@@ -133,7 +373,7 @@ impl Add<Quat> for Quat {
 impl<'a> Add<f64> for &'a Quat {
     type Output = Quat;
     
-    /// Adds a scalar to each component of a quaternion producing a new quaternion.
+    /// Adds a scalar to each component of a quaternion, producing a new quaternion.
     ///
     /// # Examples
     ///
@@ -164,7 +404,7 @@ impl<'a, 'b> Sub<&'b Quat> for &'a Quat {
     type Output = Quat;
 
     /// Subtracts each component of the `rhs` quaternion from the 
-    /// corresponding component of the `lhs` quaternion producing a new quaternion.
+    /// corresponding component of the `lhs` quaternion, producing a new quaternion.
     ///
     /// # Examples
     ///
@@ -212,7 +452,7 @@ impl Sub<Quat> for Quat {
 impl<'a> Sub<f64> for &'a Quat {
     type Output = Quat;
     
-    /// Subtracts a scalar from each component of a quaternion producing a new quaternion.
+    /// Subtracts a scalar from each component of a quaternion, producing a new quaternion.
     ///
     /// # Examples
     ///
@@ -302,7 +542,7 @@ impl Mul<Quat> for Quat {
 impl<'a> Mul<f64> for &'a Quat {
     type Output = Quat;
     
-    /// Multiplies each component of a quaternion by a scalar producing a new quaternion.
+    /// Multiplies each component of a quaternion by a scalar, producing a new quaternion.
     ///
     /// # Examples
     ///
@@ -333,7 +573,7 @@ impl<'a, 'b> Div<&'b Quat> for &'a Quat {
     type Output = Quat;
 
     /// Divides each component of the `lhs` quaternion by the 
-    /// corresponding component of the `rhs` quaternion producing a new quaternion.
+    /// corresponding component of the `rhs` quaternion, producing a new quaternion.
     ///
     /// # Examples
     ///
@@ -381,7 +621,7 @@ impl Div<Quat> for Quat {
 impl<'a> Div<f64> for &'a Quat {
     type Output = Quat;
     
-    /// Divides each component of a quaternion by a scalar producing a new quaternion.
+    /// Divides each component of a quaternion by a scalar, producing a new quaternion.
     ///
     /// # Examples
     ///
@@ -411,7 +651,7 @@ impl Div<f64> for Quat {
 impl<'a> Neg for &'a Quat {
     type Output = Quat;
     
-    /// Applies negation to each component of a quaternion producing a new quaternion.
+    /// Applies negation to each component of a quaternion, producing a new quaternion.
     ///
     /// # Examples
     ///

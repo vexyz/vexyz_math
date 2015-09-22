@@ -12,11 +12,31 @@ pub fn mat_getter(i: usize) -> String {
     format!("[{}]", i)
 }
 
+pub fn coerce(tpe: Type, arg: &str) -> String {
+    if arg == "true" || arg == "false" {
+        match tpe {
+            Type::Bool => arg.to_string(),
+            _ => panic!("Trying to coerce wrong type: {}.", tpe),
+        }
+    }
+    else if arg.contains(".") || arg.to_lowercase().contains("e") {
+        match tpe {
+            Type::Bool | Type::I32 => panic!("Trying to coerce wrong type: {}.", tpe),
+            Type::F64 => arg.to_string(),
+        }
+    }
+    else {
+        match tpe {
+            Type::Bool | Type::I32 => arg.to_string(),
+            Type::F64 => format!("{}.0", arg),
+        }
+    }
+}
+
 #[derive(Clone, Copy)]
 pub enum Type {
     Bool,
     I32,
-    Usize,
     F64,
 }
 
@@ -25,7 +45,6 @@ impl Type {
         match *self {
             Type::Bool => "boolean".to_string(),
             Type::I32 => "integer".to_string(),
-            Type::Usize => "pointer-sized unsigned integer".to_string(),
             Type::F64 => "floating point".to_string(),
         }
     }
@@ -36,7 +55,6 @@ impl Display for Type {
         match *self {
             Type::Bool => write!(formatter, "bool"),
             Type::I32 => write!(formatter, "i32"),
-            Type::Usize => write!(formatter, "usize"),
             Type::F64 => write!(formatter, "f64"),
         }
     }

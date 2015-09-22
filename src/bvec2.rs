@@ -1,4 +1,5 @@
 // Generated code.
+use std::fmt::{Display, Formatter, Result};
 use std::ops::*;
 
 /// 2-dimensional vector with boolean `x`, and `y` components.
@@ -30,7 +31,62 @@ impl Vec2b {
     /// Color-style component accessor, returns the 2nd component of the vector.
     #[inline(always)] pub fn g(&self) -> bool { self[1] }
 	
+	/// Returns true if all components of the vector are true, false otherwise.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// #[macro_use] extern crate vexyz_math;
+    /// use vexyz_math::*;
+    ///
+    /// # fn main() {
+    /// assert!(bvec2!(true, true).all());
+    /// assert!(!bvec2!(true, false).all());
+    /// # }
+    /// ```
+	pub fn all(&self) -> bool {
+		self[0] && self[1]
+	}
 	
+	/// Returns true if at least one of the vector components is true, false otherwise.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// #[macro_use] extern crate vexyz_math;
+    /// use vexyz_math::*;
+    ///
+    /// # fn main() {
+    /// assert!(bvec2!(false, true).any());
+    /// assert!(!bvec2!(false, false).any());
+    /// # }
+    /// ```
+	pub fn any(&self) -> bool {
+		self[0] || self[1]
+	}
+	
+	/// Performs component-wise negation of the vector, returning a new vector.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// #[macro_use] extern crate vexyz_math;
+    /// use vexyz_math::*;
+    ///
+    /// # fn main() {
+    /// let u = bvec2!(true, false);
+    /// assert_eq!(u.not(), bvec2!(false, true));
+    /// # }
+    /// ```
+	pub fn not(&self) -> Vec2b {
+		Vec2b::new(!self[0], !self[1])
+	}
+}
+
+impl Display for Vec2b {
+    fn fmt(&self, f: &mut Formatter) -> Result {
+    	write!(f, "Vec2b({}, {})", self[0], self[1])
+    }
 }
 
 impl Index<usize> for Vec2b {
@@ -62,7 +118,7 @@ impl<'a, 'b> BitAnd<&'b Vec2b> for &'a Vec2b {
     type Output = Vec2b;
 
     /// Performs logical *and* between each component of the `lhs` vector
-    /// and the corresponding component of the `rhs` vector producing a new vector.
+    /// and the corresponding component of the `rhs` vector, producing a new vector.
     ///
     /// # Examples
     ///
@@ -111,7 +167,7 @@ impl<'a> BitAnd<bool> for &'a Vec2b {
     type Output = Vec2b;
     
     /// Performs logical *and* between each component of a vector
-    /// and a scalar producing a new vector.
+    /// and a scalar, producing a new vector.
     ///
     /// # Examples
     ///
@@ -142,7 +198,7 @@ impl<'a, 'b> BitOr<&'b Vec2b> for &'a Vec2b {
     type Output = Vec2b;
 
     /// Performs logical *or* between each component of the `lhs` vector
-    /// and the corresponding component of the `rhs` vector producing a new vector.
+    /// and the corresponding component of the `rhs` vector, producing a new vector.
     ///
     /// # Examples
     ///
@@ -191,7 +247,7 @@ impl<'a> BitOr<bool> for &'a Vec2b {
     type Output = Vec2b;
     
     /// Performs logical *or* between each component of a vector
-    /// and a scalar producing a new vector.
+    /// and a scalar, producing a new vector.
     ///
     /// # Examples
     ///
@@ -222,7 +278,7 @@ impl<'a, 'b> BitXor<&'b Vec2b> for &'a Vec2b {
     type Output = Vec2b;
 
     /// Performs logical *xor* between each component of the `lhs` vector
-    /// and the corresponding component of the `rhs` vector producing a new vector.
+    /// and the corresponding component of the `rhs` vector, producing a new vector.
     ///
     /// # Examples
     ///
@@ -271,7 +327,7 @@ impl<'a> BitXor<bool> for &'a Vec2b {
     type Output = Vec2b;
     
     /// Performs logical *xor* between each component of a vector
-    /// and a scalar producing a new vector.
+    /// and a scalar, producing a new vector.
     ///
     /// # Examples
     ///
@@ -301,7 +357,7 @@ impl BitXor<bool> for Vec2b {
 impl<'a> Not for &'a Vec2b {
     type Output = Vec2b;
     
-    /// Applies logical negation to each component of a vector producing a new vector.
+    /// Applies logical negation to each component of a vector, producing a new vector.
     ///
     /// # Examples
     ///

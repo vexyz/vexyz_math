@@ -1,5 +1,6 @@
 // Generated code.
 use vec3::*;
+use std::fmt::{Display, Formatter, Result};
 use std::ops::*;
 
 /// Column major matrix with 3 columns and 3 rows.
@@ -15,13 +16,83 @@ impl Mat3 {
          Mat3 { cols: [col0, col1, col2] }
     }
     
-    /// Transpose XXX doc this.
+    /// Returns transpose of the matrix.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// #[macro_use] extern crate vexyz_math;
+    /// use vexyz_math::*;
+    ///
+    /// # fn main() {
+    /// let a = mat3!(
+    ///     0.1, 0.2, 0.3,
+    ///     1.1, 1.2, 1.3,
+    ///     2.1, 2.2, 2.3,
+    /// );
+    /// let b = mat3!(
+    ///     0.1, 1.1, 2.1,
+    ///     0.2, 1.2, 2.2,
+    ///     0.3, 1.3, 2.3,
+    /// );
+    /// assert_eq!(a.transpose(), b);
+    /// # }
+    /// ```
     pub fn transpose(&self) -> Mat3 {
         Mat3::new(
             Vec3::new(self[0][0], self[1][0], self[2][0]),
             Vec3::new(self[0][1], self[1][1], self[2][1]),
             Vec3::new(self[0][2], self[1][2], self[2][2]),
         )
+    }
+}
+
+pub trait Mat3Mat3Ops<Rhs> {
+    fn lerp(&self, rhs: Rhs, a: f64) -> Mat3;
+}
+
+impl<'a> Mat3Mat3Ops<&'a Mat3> for Mat3 {
+    /// Computes linear interpolation `self*(1 - a) + rhs*a` producing a new matrix.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// #[macro_use] extern crate vexyz_math;
+    /// use vexyz_math::*;
+    ///
+    /// # fn main() {
+    /// let a = mat3!(
+    ///     0.1, 0.2, 0.3,
+    ///     1.1, 1.2, 1.3,
+    ///     2.1, 2.2, 2.3,
+    /// );
+    /// let b = mat3!(
+    ///     0.5, 0.6, 0.7,
+    ///     1.5, 1.6, 1.7,
+    ///     2.5, 2.6, 2.7,
+    /// );
+    /// let c = a*(1.0 - 0.25) + b*0.25;
+    /// assert_eq!(a.lerp(b, 0.25), c);
+    /// # }
+    /// ```
+    fn lerp(&self, rhs: &Mat3, a: f64) -> Mat3 {
+    	let b = 1.0 - a;
+        Mat3::new(
+            self[0]*b + rhs[0]*a, self[1]*b + rhs[1]*a, self[2]*b + rhs[2]*a
+        )
+    }
+}
+
+impl Mat3Mat3Ops<Mat3> for Mat3 {
+	/// Shorthand for `lhs.determinant(&rhs)`.
+    #[inline(always)] fn lerp(&self, rhs: Mat3, a: f64) -> Mat3 {
+        self.lerp(&rhs, a)
+    }
+}
+
+impl Display for Mat3 {
+    fn fmt(&self, f: &mut Formatter) -> Result {
+    	write!(f, "Mat3({}, {}, {})", self[0], self[1], self[2])
     }
 }
 
@@ -286,11 +357,19 @@ impl<'a, 'b> Mul<&'b Mat3> for &'a Mat3 {
     ///     2.5, 2.6, 2.7,
     /// );
     /// let c = mat3!(
-    ///     0.1 * 0.5, 0.2 * 0.6, 0.3 * 0.7,
-    ///     1.1 * 1.5, 1.2 * 1.6, 1.3 * 1.7,
-    ///     2.1 * 2.5, 2.2 * 2.6, 2.3 * 2.7,
+    ///     0.1*0.5 + 1.1*0.6 + 2.1*0.7,
+    ///     0.2*0.5 + 1.2*0.6 + 2.2*0.7,
+    ///     0.3*0.5 + 1.3*0.6 + 2.3*0.7,
+    ///
+    ///     0.1*1.5 + 1.1*1.6 + 2.1*1.7,
+    ///     0.2*1.5 + 1.2*1.6 + 2.2*1.7,
+    ///     0.3*1.5 + 1.3*1.6 + 2.3*1.7,
+    ///
+    ///     0.1*2.5 + 1.1*2.6 + 2.1*2.7,
+    ///     0.2*2.5 + 1.2*2.6 + 2.2*2.7,
+    ///     0.3*2.5 + 1.3*2.6 + 2.3*2.7,
     /// );
-    /// assert_eq!(a * b, c);//XXX fix this
+    /// assert_eq!(a * b, c);
     /// # }
     /// ```
     fn mul(self, rhs: &Mat3) -> Mat3 {
@@ -347,17 +426,13 @@ impl<'a, 'b> Mul<&'b Vec3> for &'a Mat3 {
     ///     1.1, 1.2, 1.3,
     ///     2.1, 2.2, 2.3,
     /// );
-    /// let b = mat3!(
-    ///     0.5, 0.6, 0.7,
-    ///     1.5, 1.6, 1.7,
-    ///     2.5, 2.6, 2.7,
+    /// let u = vec3!(0.5, 0.6, 0.7);
+    /// let v = vec3!(
+    ///     0.1*0.5 + 1.1*0.6 + 2.1*0.7,
+    ///     0.2*0.5 + 1.2*0.6 + 2.2*0.7,
+    ///     0.3*0.5 + 1.3*0.6 + 2.3*0.7,
     /// );
-    /// let c = mat3!(
-    ///     0.1 * 0.5, 0.2 * 0.6, 0.3 * 0.7,
-    ///     1.1 * 1.5, 1.2 * 1.6, 1.3 * 1.7,
-    ///     2.1 * 2.5, 2.2 * 2.6, 2.3 * 2.7,
-    /// );
-    /// assert_eq!(a * b, c);//XXX fix this
+    /// assert_eq!(a * u, v);
     /// # }
     /// ```
     fn mul(self, rhs: &Vec3) -> Vec3 {

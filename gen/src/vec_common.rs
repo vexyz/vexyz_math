@@ -1,9 +1,13 @@
 use gen_common::*;
 use util::*;
 
-pub static IMPORTS: &'static str = "use std::ops::*;";
+pub static IMPORTS: &'static str = "\
+use std::fmt::{Display, Formatter, Result};
+use std::ops::*;";
+
 pub static XYZW: [&'static str; 4] = ["x", "y", "z", "w"];
 static RGBA: [&'static str; 4] = ["r", "g", "b", "a"];
+static DELTAS: [&'static str; 4] = ["-1", "0", "1", "1"];
 
 pub struct VecGen {
     pub struct_name: String,
@@ -41,14 +45,6 @@ impl VecGen {
             _ => (i + 2).to_string(),
         }
     }
-    pub fn coerce(&self, arg: String) -> String {
-        match self.tpe {
-            Type::Bool => arg,
-            Type::I32 => arg,
-            Type::Usize => arg,
-            Type::F64 => format!("{}.0", arg),
-        }
-    }
     
     pub fn doc_description(&self) -> String {
         if self.quaternion_override {
@@ -60,12 +56,20 @@ impl VecGen {
             tpe_worded = self.tpe.worded(),
         }}
     }
+    
+    pub fn bool_macro_builder_name(&self) -> String {
+        format!("bvec{}", self.dims)
+    }
+    
+    pub fn bool_struct_name(&self) -> String {
+        format!("Vec{}b", self.dims)
+    }
+    
+    pub fn deltas(&self) -> Box<Iterator<Item = String>> {
+        Box::new((0 .. self.dims).map(|i| DELTAS[i].to_string()))
+    }
 }
 
-// XXX mutable index accessor
-
-// TODO u.extend(1).yzx();
-//TODO Do not implement Rem (%) operator, modulo() is what you want instead!
 pub fn template_common_num_ops(gen: &VecGen, op_mul_vec: String) -> String { format! { "\
 {op_add_vec}
 
@@ -152,28 +156,42 @@ impl {struct_name} {{
 }}
 
 pub fn template_common_num_postfix(gen: &VecGen) -> String { format!{"\
-    {fn_sum}",
+	{fn_sum}
+	
+	{fn_abs}",
     fn_sum = fn_sum(gen),
+    fn_abs = fn_abs(gen),
+}}
+ 
+pub fn template_methods(gen: &VecGen, methods: Vec<(String, String, String)>) -> String {
+    template_named_methods(gen, "", &gen.struct_name, methods)
+}
+
+pub fn template_named_methods(
+    gen: &VecGen, name: &str, rhs_tpe: &str, methods: Vec<(String, String, String)>
+) -> String {
+    let trait_signatures = methods.iter().map(|sig| sig.0.to_string()).collect::<Vec<_>>();
+    let method_impls = methods.iter().map(|sig| sig.1.to_string()).collect::<Vec<_>>();
+    let shorthands = methods.iter().map(|sig| sig.2.to_string()).collect::<Vec<_>>();
+    
+    format!{"\
+pub trait {struct_name}{name}Ops<Rhs> {{
+    {trait_signatures}
 }}
 
-pub fn template_common_num_methods(gen: &VecGen) -> String { format!{"\
-pub trait {struct_name}Ops<Rhs> {{
-    fn dot(&self, rhs: Rhs) -> {tpe};
+impl<'a> {struct_name}{name}Ops<&'a {rhs_tpe}> for {struct_name} {{
+    {method_impls}
 }}
 
-impl<'a> {struct_name}Ops<&'a {struct_name}> for {struct_name} {{
-    {fn_dot}
-}}
-
-impl {struct_name}Ops<{struct_name}> for {struct_name} {{
-	/// Shorthand for `lhs.dot(&rhs)`.
-    fn dot(&self, rhs: {struct_name}) -> {tpe} {{
-        self.dot(&rhs)
-    }}
+impl {struct_name}{name}Ops<{rhs_tpe}> for {struct_name} {{
+	{shorthands}
 }}",
     struct_name = gen.struct_name,
-    tpe = gen.tpe,
-    fn_dot = fn_dot(gen),
+    name = name,
+    rhs_tpe = rhs_tpe,
+    trait_signatures = trait_signatures.into_iter().concat("\n\n    "),
+    method_impls = method_impls.into_iter().concat("\n\n    "),
+    shorthands = shorthands.into_iter().concat("\n\n    "),
 }}
 
 pub fn fn_accessor_primary(gen: &VecGen, index: usize) -> String { format! {"\
@@ -207,8 +225,6 @@ pub fn fn_new(gen: &VecGen) -> String { format! {"\
     body = gen.ordinals().concat(", ")
 }}
 
-
-// XXX get rid of this
 pub fn fn_sum(gen: &VecGen) -> String { format! {"\
     /// Returns the sum of vector components.
     ///
@@ -232,10 +248,99 @@ pub fn fn_sum(gen: &VecGen) -> String { format! {"\
         "self{}",getter
     )).concat(" + "),
     example_args = (0..gen.dims).map(|i| gen.lhs(i)).concat(", "),
-    example_res = (0..gen.dims).map(|i| gen.coerce(gen.lhs(i))).concat(" + "),
+    example_res = (0..gen.dims).map(|i| coerce(gen.tpe, &gen.lhs(i))).concat(" + "),
 }}
 
-pub fn fn_dot(gen: &VecGen) -> String { format! {"\
+pub fn fn_abs(gen: &VecGen) -> String { format! {"\
+    /// Performs `abs()` on each component, producing a new vector.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// #[macro_use] extern crate vexyz_math;
+    /// use vexyz_math::*;
+    ///
+    /// # fn main() {{
+    /// let u = {macro_builder}!({example_args});
+    /// assert_eq!(u.abs(), {macro_builder}!({example_res}));
+    /// # }}
+    /// ```
+    pub fn abs(&self) -> {struct_name} {{
+        {struct_name}::new({body})
+    }}",
+    macro_builder = gen.macro_builder_name,
+    struct_name = gen.struct_name,
+    body = gen.getters().map(|getter| format!(
+        "self{}.abs()",getter
+    )).concat(", "),
+    example_args = (0..gen.dims).map(|i| format!("{sign}{literal}",
+        sign = if i % 2 != 0 { "-" } else { "" },
+        literal = gen.lhs(i)
+    )).concat(", "),
+    example_res = (0..gen.dims).map(|i| gen.lhs(i)).concat(", "),
+}}
+
+pub fn method_approx_equal(gen: &VecGen) -> (String, String, String) {
+    (
+        format!("fn approx_equal(&self, rhs: Rhs, eps: {tpe}) -> bool;", tpe = gen.tpe),
+        fn_approx_equal(gen),
+        format!("\
+    /// Shorthand for `lhs.approx_equals(&rhs, eps)`.
+    #[inline(always)] fn approx_equal(&self, rhs: {struct_name}, eps: {tpe}) -> bool {{
+        self.approx_equal(&rhs, eps)
+    }}",
+            struct_name = gen.struct_name,
+            tpe = gen.tpe,
+        ),
+    )
+}
+
+fn fn_approx_equal(gen: &VecGen) -> String { format! {"\
+    /// Tests for approximate equality within given absolute error.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// #[macro_use] extern crate vexyz_math;
+    /// use vexyz_math::*;
+    ///
+    /// # fn main() {{
+    /// let {val_name} = {macro_builder}!({example_lhs});
+    /// assert!({val_name}.approx_equal({val_name} + {macro_builder}!({delta_eq}), {eps}));
+    /// assert!(!{val_name}.approx_equal({val_name} + {macro_builder}!({delta_ne}), {eps}));
+    /// # }}
+    /// ```
+    fn approx_equal(&self, rhs: &{struct_name}, eps: {tpe}) -> bool {{
+    	let eps = {struct_name}::new({eps_body});
+        (self - rhs).abs().less_than(eps).all()
+    }}",
+    macro_builder = gen.macro_builder_name,
+    struct_name = gen.struct_name,
+    tpe = gen.tpe,
+    val_name = gen.val_name,
+    eps = coerce(gen.tpe, "1e-8"),
+    eps_body = (0..gen.dims).map(|_| coerce(gen.tpe, "eps")).concat(", "),
+    delta_eq = coerce(gen.tpe, "1e-9"),
+    delta_ne = coerce(gen.tpe, "1e-8"),
+    example_lhs = (0..gen.dims).map(|i| gen.lhs(i)).concat(", "),
+}}
+
+pub fn method_dot(gen: &VecGen) -> (String, String, String) {
+    (
+        format!("fn dot(&self, rhs: Rhs) -> {tpe};", tpe = gen.tpe),
+        fn_dot(gen),
+        format!("\
+    /// Shorthand for `lhs.dot(&rhs)`.
+    #[inline(always)] fn dot(&self, rhs: {struct_name}) -> {tpe} {{
+        self.dot(&rhs)
+    }}",
+            struct_name = gen.struct_name,
+            tpe = gen.tpe,
+        ),
+    )
+}
+
+fn fn_dot(gen: &VecGen) -> String { format! {"\
     /// Returns dot product of two vectors.
     ///
     /// # Examples
@@ -245,8 +350,9 @@ pub fn fn_dot(gen: &VecGen) -> String { format! {"\
     /// use vexyz_math::*;
     ///
     /// # fn main() {{
-    /// let s = {macro_builder}!({example_lhs}).dot({macro_builder}!({example_rhs}));
-    /// assert_eq!(s, {example_res});
+    /// let u = {macro_builder}!({example_lhs});
+    /// let v = {macro_builder}!({example_rhs});
+    /// assert_eq!(u.dot(v), {example_res});
     /// # }}
     /// ```
     fn dot(&self, rhs: &{struct_name}) -> {tpe} {{
@@ -258,8 +364,85 @@ pub fn fn_dot(gen: &VecGen) -> String { format! {"\
     example_lhs = (0..gen.dims).map(|i| gen.lhs(i)).concat(", "),
     example_rhs = (0..gen.dims).map(|i| gen.rhs(i)).concat(", "),
     example_res = (0..gen.dims).map(|i| format!(
-        "{lhs} * {rhs}", lhs = gen.coerce(gen.lhs(i)), rhs = gen.coerce(gen.rhs(i))
+        "{lhs} * {rhs}", lhs = coerce(gen.tpe, &gen.lhs(i)), rhs = coerce(gen.tpe, &gen.rhs(i))
     )).concat(" + "),
+}}
+
+pub fn template_methods_compare(gen: &VecGen) -> Vec<(String, String, String)> { vec! {
+    template_method_compare(gen, &"less_than", &"<", &"less than"),
+    template_method_compare(gen, &"less_than_equal", &"<=", &"less than or equal"),
+    template_method_compare(gen, &"greater_than", &">", &"greater than"),
+    template_method_compare(gen, &"greater_than_equals", &">=", &"greater than or equal"),
+    template_method_compare(gen, &"equal", &"==", &"equal"),
+    template_method_compare(gen, &"not_equal", &"!=", &"not equal"),
+}}
+
+fn template_method_compare(
+    gen: &VecGen, method_name: &str, compare_op: &str, doc_name: &str
+) -> (String, String, String) {
+    (
+        format!("fn {method_name}(&self, rhs: Rhs) -> {bool_struct_name};",
+            method_name = method_name, bool_struct_name = gen.bool_struct_name()
+        ),
+        template_fn_compare(gen, method_name, compare_op, doc_name),
+        format!("\
+    /// Shorthand for `lhs.{method_name}(&rhs)`.
+    #[inline(always)] fn {method_name}(&self, rhs: {struct_name}) -> {bool_struct_name} {{
+        self.{method_name}(&rhs)
+    }}",
+            struct_name = gen.struct_name,
+            bool_struct_name = gen.bool_struct_name(),
+            method_name = method_name,
+        ),
+    )
+}
+
+fn template_fn_compare(
+    gen: &VecGen, method_name: &str, compare_op: &str, doc_name: &str
+) -> String { format! {"\
+    /// Performs component-wise numerical `{doc_name}` comparision of two vectors,
+    /// returning a boolean vector.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// #[macro_use] extern crate vexyz_math;
+    /// use vexyz_math::*;
+    ///
+    /// # fn main() {{
+    /// let u = {macro_builder}!({example_lhs});
+    /// let v = u + {macro_builder}!({example_rhs});
+    /// assert_eq!(u.{method_name}(v), {res_macro_builder}!({example_res}));
+    /// # }}
+    /// ```
+    fn {method_name}(&self, rhs: &{struct_name}) -> {bool_struct_name} {{
+        {bool_struct_name}::new({body})
+    }}",
+    macro_builder = gen.macro_builder_name,
+    res_macro_builder = gen.bool_macro_builder_name(),
+    struct_name = gen.struct_name,
+    method_name = method_name,
+    bool_struct_name = gen.bool_struct_name(),
+    body = (0..gen.dims).map(|i| format!(
+        "self{getter} {op} rhs{getter}", getter = vec_getter(i), op = compare_op,
+    )).concat(", "),
+    doc_name = doc_name,
+    example_lhs = (0..gen.dims).map(|i| gen.lhs(i)).concat(", "),
+    example_rhs = gen.deltas().concat(", "),
+    example_res = gen.ordinals().map(|ord| format!(
+        "u.{ord}() {op} v.{ord}()", ord = ord, op = compare_op
+    )).concat(", "),
+}}
+
+pub fn trait_display(gen: &VecGen) -> String { format! {"\
+impl Display for {struct_name} {{
+    fn fmt(&self, f: &mut Formatter) -> Result {{
+    	write!(f, \"{struct_name}({tokens})\", {body})
+    }}
+}}",
+    struct_name = gen.struct_name,
+    tokens = (0..gen.dims).map(|_| "{}".to_string()).concat(", "),
+    body = (0..gen.dims).map(|i| format!("self{}", vec_getter(i))).concat(", "),
 }}
 
 pub fn op_index(gen: &VecGen) -> String { format! {"\
@@ -315,7 +498,7 @@ pub fn template_op_bin_vec(
 impl<'a, 'b> {trait_name}<&'b {struct_name}> for &'a {struct_name} {{
     type Output = {struct_name};
 
-    /// {doc_desc} producing a new {doc_name}.
+    /// {doc_desc}, producing a new {doc_name}.
     ///
     /// # Examples
     ///
@@ -362,7 +545,7 @@ pub fn template_op_bin_scalar(
 impl<'a> {trait_name}<{tpe}> for &'a {struct_name} {{
     type Output = {struct_name};
     
-    /// {doc_desc} producing a new {doc_name}.
+    /// {doc_desc}, producing a new {doc_name}.
     ///
     /// # Examples
     ///
@@ -394,7 +577,7 @@ impl<'a> {trait_name}<{tpe}> for &'a {struct_name} {{
         "self{getter} {op} rhs", getter = getter, op = op
     )).concat(", "),
     example_lhs = (0..gen.dims).map(|i| gen.lhs(i)).concat(", "),
-    example_rhs_arg = gen.coerce(gen.rhs(0)),
+    example_rhs_arg = coerce(gen.tpe, &gen.rhs(0)),
     example_res = (0..gen.dims).map(|i| format!(
         "{lhs} {op} {rhs}", lhs = gen.lhs(i), op = op, rhs = gen.rhs(0)
     )).concat(", "),
@@ -408,7 +591,7 @@ pub fn template_op_unary(gen: &VecGen, trait_name: &str, fn_name: &str, op: &str
 impl<'a> {trait_name} for &'a {struct_name} {{
     type Output = {struct_name};
     
-    /// Applies {doc_verb} to each component of a {doc_name} producing a new {doc_name}.
+    /// Applies {doc_verb} to each component of a {doc_name}, producing a new {doc_name}.
     ///
     /// # Examples
     ///
@@ -496,11 +679,11 @@ macro_rules! {macro_name} {{
     tpe = gen.tpe,
     body_1 = (0 .. gen.dims).map(|_| "s".to_string()).concat(", "),
     args_n = gen.ordinals().map(|ord| format!("${}:expr", ord)).concat(", "),
-    example_1_arg = gen.coerce(gen.rhs(0)),
-    example_1_body = (0 .. gen.dims).map(|_| gen.coerce(gen.rhs(0))).concat(", "),
+    example_1_arg = coerce(gen.tpe, &gen.rhs(0)),
+    example_1_body = (0 .. gen.dims).map(|_| coerce(gen.tpe, &gen.rhs(0))).concat(", "),
     body_n = gen.ordinals().map(|ord| format!("${} as {}", ord, gen.tpe)).concat(", "),
     example_n_args_worded = gen.ordinals().zip(0 .. gen.dims).map(|(ord, i)| format!(
         "`{ord} = {value}`", ord = ord, value = gen.rhs(i)
     )).worded(),
-    example_n_args = (0 .. gen.dims).map(|i| gen.coerce(gen.rhs(i))).concat(", "),
+    example_n_args = (0 .. gen.dims).map(|i| coerce(gen.tpe, &gen.rhs(i))).concat(", "),
 }}

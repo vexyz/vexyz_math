@@ -1,4 +1,5 @@
 // Generated code.
+use std::fmt::{Display, Formatter, Result};
 use std::ops::*;
 
 /// 3-dimensional vector with boolean `x`, `y`, and `z` components.
@@ -36,7 +37,62 @@ impl Vec3b {
     /// Color-style component accessor, returns the 3rd component of the vector.
     #[inline(always)] pub fn b(&self) -> bool { self[2] }
 	
+	/// Returns true if all components of the vector are true, false otherwise.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// #[macro_use] extern crate vexyz_math;
+    /// use vexyz_math::*;
+    ///
+    /// # fn main() {
+    /// assert!(bvec3!(true, true, true).all());
+    /// assert!(!bvec3!(true, false, true).all());
+    /// # }
+    /// ```
+	pub fn all(&self) -> bool {
+		self[0] && self[1] && self[2]
+	}
 	
+	/// Returns true if at least one of the vector components is true, false otherwise.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// #[macro_use] extern crate vexyz_math;
+    /// use vexyz_math::*;
+    ///
+    /// # fn main() {
+    /// assert!(bvec3!(false, true, false).any());
+    /// assert!(!bvec3!(false, false, false).any());
+    /// # }
+    /// ```
+	pub fn any(&self) -> bool {
+		self[0] || self[1] || self[2]
+	}
+	
+	/// Performs component-wise negation of the vector, returning a new vector.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// #[macro_use] extern crate vexyz_math;
+    /// use vexyz_math::*;
+    ///
+    /// # fn main() {
+    /// let u = bvec3!(true, false, true);
+    /// assert_eq!(u.not(), bvec3!(false, true, false));
+    /// # }
+    /// ```
+	pub fn not(&self) -> Vec3b {
+		Vec3b::new(!self[0], !self[1], !self[2])
+	}
+}
+
+impl Display for Vec3b {
+    fn fmt(&self, f: &mut Formatter) -> Result {
+    	write!(f, "Vec3b({}, {}, {})", self[0], self[1], self[2])
+    }
 }
 
 impl Index<usize> for Vec3b {
@@ -68,7 +124,7 @@ impl<'a, 'b> BitAnd<&'b Vec3b> for &'a Vec3b {
     type Output = Vec3b;
 
     /// Performs logical *and* between each component of the `lhs` vector
-    /// and the corresponding component of the `rhs` vector producing a new vector.
+    /// and the corresponding component of the `rhs` vector, producing a new vector.
     ///
     /// # Examples
     ///
@@ -117,7 +173,7 @@ impl<'a> BitAnd<bool> for &'a Vec3b {
     type Output = Vec3b;
     
     /// Performs logical *and* between each component of a vector
-    /// and a scalar producing a new vector.
+    /// and a scalar, producing a new vector.
     ///
     /// # Examples
     ///
@@ -148,7 +204,7 @@ impl<'a, 'b> BitOr<&'b Vec3b> for &'a Vec3b {
     type Output = Vec3b;
 
     /// Performs logical *or* between each component of the `lhs` vector
-    /// and the corresponding component of the `rhs` vector producing a new vector.
+    /// and the corresponding component of the `rhs` vector, producing a new vector.
     ///
     /// # Examples
     ///
@@ -197,7 +253,7 @@ impl<'a> BitOr<bool> for &'a Vec3b {
     type Output = Vec3b;
     
     /// Performs logical *or* between each component of a vector
-    /// and a scalar producing a new vector.
+    /// and a scalar, producing a new vector.
     ///
     /// # Examples
     ///
@@ -228,7 +284,7 @@ impl<'a, 'b> BitXor<&'b Vec3b> for &'a Vec3b {
     type Output = Vec3b;
 
     /// Performs logical *xor* between each component of the `lhs` vector
-    /// and the corresponding component of the `rhs` vector producing a new vector.
+    /// and the corresponding component of the `rhs` vector, producing a new vector.
     ///
     /// # Examples
     ///
@@ -277,7 +333,7 @@ impl<'a> BitXor<bool> for &'a Vec3b {
     type Output = Vec3b;
     
     /// Performs logical *xor* between each component of a vector
-    /// and a scalar producing a new vector.
+    /// and a scalar, producing a new vector.
     ///
     /// # Examples
     ///
@@ -307,7 +363,7 @@ impl BitXor<bool> for Vec3b {
 impl<'a> Not for &'a Vec3b {
     type Output = Vec3b;
     
-    /// Applies logical negation to each component of a vector producing a new vector.
+    /// Applies logical negation to each component of a vector, producing a new vector.
     ///
     /// # Examples
     ///

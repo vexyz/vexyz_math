@@ -1,5 +1,6 @@
 // Generated code.
 use vec2::*;
+use std::fmt::{Display, Formatter, Result};
 use std::ops::*;
 
 /// Column major matrix with 2 columns and 2 rows.
@@ -15,12 +16,78 @@ impl Mat2 {
          Mat2 { cols: [col0, col1] }
     }
     
-    /// Transpose XXX doc this.
+    /// Returns transpose of the matrix.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// #[macro_use] extern crate vexyz_math;
+    /// use vexyz_math::*;
+    ///
+    /// # fn main() {
+    /// let a = mat2!(
+    ///     0.1, 0.2,
+    ///     1.1, 1.2,
+    /// );
+    /// let b = mat2!(
+    ///     0.1, 1.1,
+    ///     0.2, 1.2,
+    /// );
+    /// assert_eq!(a.transpose(), b);
+    /// # }
+    /// ```
     pub fn transpose(&self) -> Mat2 {
         Mat2::new(
             Vec2::new(self[0][0], self[1][0]),
             Vec2::new(self[0][1], self[1][1]),
         )
+    }
+}
+
+pub trait Mat2Mat2Ops<Rhs> {
+    fn lerp(&self, rhs: Rhs, a: f64) -> Mat2;
+}
+
+impl<'a> Mat2Mat2Ops<&'a Mat2> for Mat2 {
+    /// Computes linear interpolation `self*(1 - a) + rhs*a` producing a new matrix.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// #[macro_use] extern crate vexyz_math;
+    /// use vexyz_math::*;
+    ///
+    /// # fn main() {
+    /// let a = mat2!(
+    ///     0.1, 0.2,
+    ///     1.1, 1.2,
+    /// );
+    /// let b = mat2!(
+    ///     0.5, 0.6,
+    ///     1.5, 1.6,
+    /// );
+    /// let c = a*(1.0 - 0.25) + b*0.25;
+    /// assert_eq!(a.lerp(b, 0.25), c);
+    /// # }
+    /// ```
+    fn lerp(&self, rhs: &Mat2, a: f64) -> Mat2 {
+    	let b = 1.0 - a;
+        Mat2::new(
+            self[0]*b + rhs[0]*a, self[1]*b + rhs[1]*a
+        )
+    }
+}
+
+impl Mat2Mat2Ops<Mat2> for Mat2 {
+	/// Shorthand for `lhs.determinant(&rhs)`.
+    #[inline(always)] fn lerp(&self, rhs: Mat2, a: f64) -> Mat2 {
+        self.lerp(&rhs, a)
+    }
+}
+
+impl Display for Mat2 {
+    fn fmt(&self, f: &mut Formatter) -> Result {
+    	write!(f, "Mat2({}, {})", self[0], self[1])
     }
 }
 
@@ -272,10 +339,13 @@ impl<'a, 'b> Mul<&'b Mat2> for &'a Mat2 {
     ///     1.5, 1.6,
     /// );
     /// let c = mat2!(
-    ///     0.1 * 0.5, 0.2 * 0.6,
-    ///     1.1 * 1.5, 1.2 * 1.6,
+    ///     0.1*0.5 + 1.1*0.6,
+    ///     0.2*0.5 + 1.2*0.6,
+    ///
+    ///     0.1*1.5 + 1.1*1.6,
+    ///     0.2*1.5 + 1.2*1.6,
     /// );
-    /// assert_eq!(a * b, c);//XXX fix this
+    /// assert_eq!(a * b, c);
     /// # }
     /// ```
     fn mul(self, rhs: &Mat2) -> Mat2 {
@@ -330,15 +400,12 @@ impl<'a, 'b> Mul<&'b Vec2> for &'a Mat2 {
     ///     0.1, 0.2,
     ///     1.1, 1.2,
     /// );
-    /// let b = mat2!(
-    ///     0.5, 0.6,
-    ///     1.5, 1.6,
+    /// let u = vec2!(0.5, 0.6);
+    /// let v = vec2!(
+    ///     0.1*0.5 + 1.1*0.6,
+    ///     0.2*0.5 + 1.2*0.6,
     /// );
-    /// let c = mat2!(
-    ///     0.1 * 0.5, 0.2 * 0.6,
-    ///     1.1 * 1.5, 1.2 * 1.6,
-    /// );
-    /// assert_eq!(a * b, c);//XXX fix this
+    /// assert_eq!(a * u, v);
     /// # }
     /// ```
     fn mul(self, rhs: &Vec2) -> Vec2 {

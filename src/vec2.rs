@@ -1,5 +1,7 @@
 // Generated code.
+use std::fmt::{Display, Formatter, Result};
 use std::ops::*;
+use Vec2b;
 
 /// 2-dimensional vector with floating point `x`, and `y` components.
 ///
@@ -46,13 +48,196 @@ impl Vec2 {
     pub fn sum(&self) -> f64 {
         self[0] + self[1]
     }
+	
+	/// Performs `abs()` on each component, producing a new vector.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// #[macro_use] extern crate vexyz_math;
+    /// use vexyz_math::*;
+    ///
+    /// # fn main() {
+    /// let u = vec2!(20, -30);
+    /// assert_eq!(u.abs(), vec2!(20, 30));
+    /// # }
+    /// ```
+    pub fn abs(&self) -> Vec2 {
+        Vec2::new(self[0].abs(), self[1].abs())
+    }
+	
+	/// Computes the length of the vector.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// #[macro_use] extern crate vexyz_math;
+    /// use vexyz_math::*;
+    ///
+    /// # fn main() {
+    /// let u = vec2!(20, 30);
+    /// assert_eq!(u.length(), ((20*20 + 30*30) as f64).sqrt());
+    /// # }
+    /// ```
+	pub fn length(&self) -> f64 {
+		self.dot(self).sqrt()
+	}
 }
 
 pub trait Vec2Ops<Rhs> {
+    fn less_than(&self, rhs: Rhs) -> Vec2b;
+
+    fn less_than_equal(&self, rhs: Rhs) -> Vec2b;
+
+    fn greater_than(&self, rhs: Rhs) -> Vec2b;
+
+    fn greater_than_equals(&self, rhs: Rhs) -> Vec2b;
+
+    fn equal(&self, rhs: Rhs) -> Vec2b;
+
+    fn not_equal(&self, rhs: Rhs) -> Vec2b;
+
+    fn approx_equal(&self, rhs: Rhs, eps: f64) -> bool;
+
     fn dot(&self, rhs: Rhs) -> f64;
+
+    fn lerp(&self, rhs: Rhs, a: f64) -> Vec2;
 }
 
 impl<'a> Vec2Ops<&'a Vec2> for Vec2 {
+    /// Performs component-wise numerical `less than` comparision of two vectors,
+    /// returning a boolean vector.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// #[macro_use] extern crate vexyz_math;
+    /// use vexyz_math::*;
+    ///
+    /// # fn main() {
+    /// let u = vec2!(20, 30);
+    /// let v = u + vec2!(-1, 0);
+    /// assert_eq!(u.less_than(v), bvec2!(u.x() < v.x(), u.y() < v.y()));
+    /// # }
+    /// ```
+    fn less_than(&self, rhs: &Vec2) -> Vec2b {
+        Vec2b::new(self[0] < rhs[0], self[1] < rhs[1])
+    }
+
+    /// Performs component-wise numerical `less than or equal` comparision of two vectors,
+    /// returning a boolean vector.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// #[macro_use] extern crate vexyz_math;
+    /// use vexyz_math::*;
+    ///
+    /// # fn main() {
+    /// let u = vec2!(20, 30);
+    /// let v = u + vec2!(-1, 0);
+    /// assert_eq!(u.less_than_equal(v), bvec2!(u.x() <= v.x(), u.y() <= v.y()));
+    /// # }
+    /// ```
+    fn less_than_equal(&self, rhs: &Vec2) -> Vec2b {
+        Vec2b::new(self[0] <= rhs[0], self[1] <= rhs[1])
+    }
+
+    /// Performs component-wise numerical `greater than` comparision of two vectors,
+    /// returning a boolean vector.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// #[macro_use] extern crate vexyz_math;
+    /// use vexyz_math::*;
+    ///
+    /// # fn main() {
+    /// let u = vec2!(20, 30);
+    /// let v = u + vec2!(-1, 0);
+    /// assert_eq!(u.greater_than(v), bvec2!(u.x() > v.x(), u.y() > v.y()));
+    /// # }
+    /// ```
+    fn greater_than(&self, rhs: &Vec2) -> Vec2b {
+        Vec2b::new(self[0] > rhs[0], self[1] > rhs[1])
+    }
+
+    /// Performs component-wise numerical `greater than or equal` comparision of two vectors,
+    /// returning a boolean vector.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// #[macro_use] extern crate vexyz_math;
+    /// use vexyz_math::*;
+    ///
+    /// # fn main() {
+    /// let u = vec2!(20, 30);
+    /// let v = u + vec2!(-1, 0);
+    /// assert_eq!(u.greater_than_equals(v), bvec2!(u.x() >= v.x(), u.y() >= v.y()));
+    /// # }
+    /// ```
+    fn greater_than_equals(&self, rhs: &Vec2) -> Vec2b {
+        Vec2b::new(self[0] >= rhs[0], self[1] >= rhs[1])
+    }
+
+    /// Performs component-wise numerical `equal` comparision of two vectors,
+    /// returning a boolean vector.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// #[macro_use] extern crate vexyz_math;
+    /// use vexyz_math::*;
+    ///
+    /// # fn main() {
+    /// let u = vec2!(20, 30);
+    /// let v = u + vec2!(-1, 0);
+    /// assert_eq!(u.equal(v), bvec2!(u.x() == v.x(), u.y() == v.y()));
+    /// # }
+    /// ```
+    fn equal(&self, rhs: &Vec2) -> Vec2b {
+        Vec2b::new(self[0] == rhs[0], self[1] == rhs[1])
+    }
+
+    /// Performs component-wise numerical `not equal` comparision of two vectors,
+    /// returning a boolean vector.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// #[macro_use] extern crate vexyz_math;
+    /// use vexyz_math::*;
+    ///
+    /// # fn main() {
+    /// let u = vec2!(20, 30);
+    /// let v = u + vec2!(-1, 0);
+    /// assert_eq!(u.not_equal(v), bvec2!(u.x() != v.x(), u.y() != v.y()));
+    /// # }
+    /// ```
+    fn not_equal(&self, rhs: &Vec2) -> Vec2b {
+        Vec2b::new(self[0] != rhs[0], self[1] != rhs[1])
+    }
+
+    /// Tests for approximate equality within given absolute error.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// #[macro_use] extern crate vexyz_math;
+    /// use vexyz_math::*;
+    ///
+    /// # fn main() {
+    /// let u = vec2!(20, 30);
+    /// assert!(u.approx_equal(u + vec2!(1e-9), 1e-8));
+    /// assert!(!u.approx_equal(u + vec2!(1e-8), 1e-8));
+    /// # }
+    /// ```
+    fn approx_equal(&self, rhs: &Vec2, eps: f64) -> bool {
+    	let eps = Vec2::new(eps, eps);
+        (self - rhs).abs().less_than(eps).all()
+    }
+
     /// Returns dot product of two vectors.
     ///
     /// # Examples
@@ -62,19 +247,85 @@ impl<'a> Vec2Ops<&'a Vec2> for Vec2 {
     /// use vexyz_math::*;
     ///
     /// # fn main() {
-    /// let u = vec2!(20, 30).dot(vec2!(2, 3));
-    /// assert_eq!(u, 20.0 * 2.0 + 30.0 * 3.0);
+    /// let u = vec2!(20, 30);
+    /// let v = vec2!(2, 3);
+    /// assert_eq!(u.dot(v), 20.0 * 2.0 + 30.0 * 3.0);
     /// # }
     /// ```
     fn dot(&self, rhs: &Vec2) -> f64 {
         (self * rhs).sum()
     }
+
+    /// Computes linear interpolation `self*(1 - a) + rhs*a` producing a new vector.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// #[macro_use] extern crate vexyz_math;
+    /// use vexyz_math::*;
+    ///
+    /// # fn main() {
+    /// let u = vec2!(20, 30);
+    /// let v = vec2!(2, 3);
+    /// let w = u.lerp(v, 0.25);
+    /// assert_eq!(w, vec2!(20.0*0.75 + 2.0*0.25, 30.0*0.75 + 3.0*0.25));
+    /// # }
+    /// ```
+    fn lerp(&self, rhs: &Vec2, a: f64) -> Vec2 {
+    	self*(1.0 - a) + rhs*a
+    }
 }
 
 impl Vec2Ops<Vec2> for Vec2 {
-	/// Shorthand for `lhs.dot(&rhs)`.
-    fn dot(&self, rhs: Vec2) -> f64 {
+	/// Shorthand for `lhs.less_than(&rhs)`.
+    #[inline(always)] fn less_than(&self, rhs: Vec2) -> Vec2b {
+        self.less_than(&rhs)
+    }
+
+    /// Shorthand for `lhs.less_than_equal(&rhs)`.
+    #[inline(always)] fn less_than_equal(&self, rhs: Vec2) -> Vec2b {
+        self.less_than_equal(&rhs)
+    }
+
+    /// Shorthand for `lhs.greater_than(&rhs)`.
+    #[inline(always)] fn greater_than(&self, rhs: Vec2) -> Vec2b {
+        self.greater_than(&rhs)
+    }
+
+    /// Shorthand for `lhs.greater_than_equals(&rhs)`.
+    #[inline(always)] fn greater_than_equals(&self, rhs: Vec2) -> Vec2b {
+        self.greater_than_equals(&rhs)
+    }
+
+    /// Shorthand for `lhs.equal(&rhs)`.
+    #[inline(always)] fn equal(&self, rhs: Vec2) -> Vec2b {
+        self.equal(&rhs)
+    }
+
+    /// Shorthand for `lhs.not_equal(&rhs)`.
+    #[inline(always)] fn not_equal(&self, rhs: Vec2) -> Vec2b {
+        self.not_equal(&rhs)
+    }
+
+    /// Shorthand for `lhs.approx_equals(&rhs, eps)`.
+    #[inline(always)] fn approx_equal(&self, rhs: Vec2, eps: f64) -> bool {
+        self.approx_equal(&rhs, eps)
+    }
+
+    /// Shorthand for `lhs.dot(&rhs)`.
+    #[inline(always)] fn dot(&self, rhs: Vec2) -> f64 {
         self.dot(&rhs)
+    }
+
+    /// Shorthand for `lhs.determinant(&rhs)`.
+    #[inline(always)] fn lerp(&self, rhs: Vec2, a: f64) -> Vec2 {
+        self.lerp(&rhs, a)
+    }
+}
+
+impl Display for Vec2 {
+    fn fmt(&self, f: &mut Formatter) -> Result {
+    	write!(f, "Vec2({}, {})", self[0], self[1])
     }
 }
 
@@ -106,7 +357,7 @@ impl Index<usize> for Vec2 {
 impl<'a, 'b> Add<&'b Vec2> for &'a Vec2 {
     type Output = Vec2;
 
-    /// Performs component-wise addition of two vectors producing a new vector.
+    /// Performs component-wise addition of two vectors, producing a new vector.
     ///
     /// # Examples
     ///
@@ -154,7 +405,7 @@ impl Add<Vec2> for Vec2 {
 impl<'a> Add<f64> for &'a Vec2 {
     type Output = Vec2;
     
-    /// Adds a scalar to each component of a vector producing a new vector.
+    /// Adds a scalar to each component of a vector, producing a new vector.
     ///
     /// # Examples
     ///
@@ -185,7 +436,7 @@ impl<'a, 'b> Sub<&'b Vec2> for &'a Vec2 {
     type Output = Vec2;
 
     /// Subtracts each component of the `rhs` vector from the 
-    /// corresponding component of the `lhs` vector producing a new vector.
+    /// corresponding component of the `lhs` vector, producing a new vector.
     ///
     /// # Examples
     ///
@@ -233,7 +484,7 @@ impl Sub<Vec2> for Vec2 {
 impl<'a> Sub<f64> for &'a Vec2 {
     type Output = Vec2;
     
-    /// Subtracts a scalar from each component of a vector producing a new vector.
+    /// Subtracts a scalar from each component of a vector, producing a new vector.
     ///
     /// # Examples
     ///
@@ -263,7 +514,7 @@ impl Sub<f64> for Vec2 {
 impl<'a, 'b> Mul<&'b Vec2> for &'a Vec2 {
     type Output = Vec2;
 
-    /// Performs component-wise multiplication of two vectors producing a new vector.
+    /// Performs component-wise multiplication of two vectors, producing a new vector.
     ///
     /// # Examples
     ///
@@ -311,7 +562,7 @@ impl Mul<Vec2> for Vec2 {
 impl<'a> Mul<f64> for &'a Vec2 {
     type Output = Vec2;
     
-    /// Multiplies each component of a vector by a scalar producing a new vector.
+    /// Multiplies each component of a vector by a scalar, producing a new vector.
     ///
     /// # Examples
     ///
@@ -342,7 +593,7 @@ impl<'a, 'b> Div<&'b Vec2> for &'a Vec2 {
     type Output = Vec2;
 
     /// Divides each component of the `lhs` vector by the 
-    /// corresponding component of the `rhs` vector producing a new vector.
+    /// corresponding component of the `rhs` vector, producing a new vector.
     ///
     /// # Examples
     ///
@@ -390,7 +641,7 @@ impl Div<Vec2> for Vec2 {
 impl<'a> Div<f64> for &'a Vec2 {
     type Output = Vec2;
     
-    /// Divides each component of a vector by a scalar producing a new vector.
+    /// Divides each component of a vector by a scalar, producing a new vector.
     ///
     /// # Examples
     ///
@@ -420,7 +671,7 @@ impl Div<f64> for Vec2 {
 impl<'a> Neg for &'a Vec2 {
     type Output = Vec2;
     
-    /// Applies negation to each component of a vector producing a new vector.
+    /// Applies negation to each component of a vector, producing a new vector.
     ///
     /// # Examples
     ///

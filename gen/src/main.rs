@@ -1,7 +1,6 @@
 extern crate vexyz_math_gen;
 use vexyz_math_gen::vector_gen_bool;
 use vexyz_math_gen::vector_gen_int;
-use vexyz_math_gen::vector_gen_usize;
 use vexyz_math_gen::vector_gen_float;
 use vexyz_math_gen::quaternion_gen;
 use vexyz_math_gen::matrix_gen;
@@ -23,7 +22,6 @@ fn write_vectors(target_dir: &str) {
     for n in 2 .. 5 {
         write_bool_vector(target_dir, n);
         write_int_vector(target_dir, n);
-        write_usize_vector(target_dir, n);
         write_float_vector(target_dir, n);
     }
     println!("  done!");
@@ -43,10 +41,6 @@ fn write_bool_vector(target_dir: &str, n: usize) {
 
 fn write_int_vector(target_dir: &str, n: usize) {
     write_vector(target_dir, format!("ivec{}.rs", n), vector_gen_int::gen_int_vector(n))
-}
-
-fn write_usize_vector(target_dir: &str, n: usize) {
-    write_vector(target_dir, format!("uvec{}.rs", n), vector_gen_usize::gen_usize_vector(n))
 }
 
 fn write_float_vector(target_dir: &str, n: usize) {
