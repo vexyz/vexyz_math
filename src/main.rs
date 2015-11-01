@@ -5,12 +5,11 @@ use vexyz_math::*;
 
 fn main() {
     println!("Math main");
-    let _u = vec3!(2);
-    let m = mat2!(2) * mat2!(3);
-    println!("{}", m);
-    test();
-}
-
-fn test() {
-    ((1 + 2 )as f64).sqrt();
+    let q0 = quat!().rotate_x(90_f64.to_radians());
+    let q1 = quat!().rotate_y(90_f64.to_radians());
+    let q = q0.rotate(q1);
+    println!("q = {}", q);
+    let u = q.rotate_vec(vec3!(1, 1, 0));
+    println!("u = {}", u);
+    assert!(u.approx_equal(vec3!(0, 1, 1), 1e-8));
 }

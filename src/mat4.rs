@@ -81,7 +81,7 @@ impl<'a> Mat4Mat4Ops<&'a Mat4> for Mat4 {
     /// # }
     /// ```
     fn lerp(&self, rhs: &Mat4, a: f64) -> Mat4 {
-    	let b = 1.0 - a;
+        let b = 1.0 - a;
         Mat4::new(
             self[0]*b + rhs[0]*a, self[1]*b + rhs[1]*a, self[2]*b + rhs[2]*a, self[3]*b + rhs[3]*a
         )
@@ -89,7 +89,7 @@ impl<'a> Mat4Mat4Ops<&'a Mat4> for Mat4 {
 }
 
 impl Mat4Mat4Ops<Mat4> for Mat4 {
-	/// Shorthand for `lhs.determinant(&rhs)`.
+    /// Shorthand for `lhs.determinant(&rhs)`.
     #[inline(always)] fn lerp(&self, rhs: Mat4, a: f64) -> Mat4 {
         self.lerp(&rhs, a)
     }
@@ -97,7 +97,7 @@ impl Mat4Mat4Ops<Mat4> for Mat4 {
 
 impl Display for Mat4 {
     fn fmt(&self, f: &mut Formatter) -> Result {
-    	write!(f, "Mat4({}, {}, {}, {})", self[0], self[1], self[2], self[3])
+        write!(f, "Mat4({}, {}, {}, {})", self[0], self[1], self[2], self[3])
     }
 }
 

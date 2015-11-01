@@ -27,7 +27,7 @@ impl Vec3b {
     /// Component accessor, returns the 3rd component of the vector.
     #[inline(always)] pub fn z(&self) -> bool { self[2] }
     
-	
+    
     /// Color-style component accessor, returns the 1st component of the vector.
     #[inline(always)] pub fn r(&self) -> bool { self[0] }
 
@@ -36,8 +36,8 @@ impl Vec3b {
 
     /// Color-style component accessor, returns the 3rd component of the vector.
     #[inline(always)] pub fn b(&self) -> bool { self[2] }
-	
-	/// Returns true if all components of the vector are true, false otherwise.
+    
+    /// Returns true if all components of the vector are true, false otherwise.
     ///
     /// # Examples
     ///
@@ -50,11 +50,11 @@ impl Vec3b {
     /// assert!(!bvec3!(true, false, true).all());
     /// # }
     /// ```
-	pub fn all(&self) -> bool {
-		self[0] && self[1] && self[2]
-	}
-	
-	/// Returns true if at least one of the vector components is true, false otherwise.
+    pub fn all(&self) -> bool {
+        self[0] && self[1] && self[2]
+    }
+    
+    /// Returns true if at least one of the vector components is true, false otherwise.
     ///
     /// # Examples
     ///
@@ -67,11 +67,11 @@ impl Vec3b {
     /// assert!(!bvec3!(false, false, false).any());
     /// # }
     /// ```
-	pub fn any(&self) -> bool {
-		self[0] || self[1] || self[2]
-	}
-	
-	/// Performs component-wise negation of the vector, returning a new vector.
+    pub fn any(&self) -> bool {
+        self[0] || self[1] || self[2]
+    }
+    
+    /// Performs component-wise negation of the vector, returning a new vector.
     ///
     /// # Examples
     ///
@@ -84,14 +84,14 @@ impl Vec3b {
     /// assert_eq!(u.not(), bvec3!(false, true, false));
     /// # }
     /// ```
-	pub fn not(&self) -> Vec3b {
-		Vec3b::new(!self[0], !self[1], !self[2])
-	}
+    pub fn not(&self) -> Vec3b {
+        Vec3b::new(!self[0], !self[1], !self[2])
+    }
 }
 
 impl Display for Vec3b {
     fn fmt(&self, f: &mut Formatter) -> Result {
-    	write!(f, "Vec3b({}, {}, {})", self[0], self[1], self[2])
+        write!(f, "Vec3b({}, {}, {})", self[0], self[1], self[2])
     }
 }
 

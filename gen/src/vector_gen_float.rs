@@ -43,9 +43,9 @@ fn template_file(gen: &VecGen) -> String { format! {"\
     ),
     template_struct = vec_common::template_struct(gen, vec_common::doc_vec_struct(gen)),
     template_struct_impl = vec_common::template_struct_impl(gen, format! {"\
-	{template_common_num_postfix}
-	
-	{template_float_postfix}",
+    {template_common_num_postfix}
+    
+    {template_float_postfix}",
         template_common_num_postfix = vec_common::template_common_num_postfix(gen),
         template_float_postfix = template_float_postfix(gen),
     }),
@@ -66,7 +66,7 @@ fn template_file(gen: &VecGen) -> String { format! {"\
 }}
 
 fn fn_length(gen: &VecGen) -> String { format! {"\
-	/// Computes the length of the vector.
+    /// Computes the length of the vector.
     ///
     /// # Examples
     ///
@@ -79,20 +79,20 @@ fn fn_length(gen: &VecGen) -> String { format! {"\
     /// assert_eq!(u.length(), {example_res});
     /// # }}
     /// ```
-	pub fn length(&self) -> {tpe} {{
-		self.dot(self).sqrt()
-	}}",
-	tpe = gen.tpe,
-	macro_builder = gen.macro_builder_name,
-	example_args = (0..gen.dims).map(|i| gen.lhs(i)).concat(", "),
-	example_res = (0..gen.dims).map(|i|
+    pub fn length(&self) -> {tpe} {{
+        self.dot(self).sqrt()
+    }}",
+    tpe = gen.tpe,
+    macro_builder = gen.macro_builder_name,
+    example_args = (0..gen.dims).map(|i| gen.lhs(i)).concat(", "),
+    example_res = (0..gen.dims).map(|i|
         format!("{s}*{s}", s = gen.lhs(i))
     ).mk_string("((", " + ", ") as f64).sqrt()"),
 }}
 
 fn template_float_postfix(gen: &VecGen) -> String { format! {"\
-	{fn_length}",
-	fn_length = fn_length(gen),
+    {fn_length}",
+    fn_length = fn_length(gen),
 }}
 
 fn method_lerp(gen: &VecGen) -> (String, String, String) {
@@ -113,7 +113,7 @@ fn method_lerp(gen: &VecGen) -> (String, String, String) {
 }
 
 fn fn_lerp(gen: &VecGen) -> String { format! {"\
-	/// Computes linear interpolation `self*(1 - a) + rhs*a` producing a new vector.
+    /// Computes linear interpolation `self*(1 - a) + rhs*a` producing a new vector.
     ///
     /// # Examples
     ///
@@ -129,7 +129,7 @@ fn fn_lerp(gen: &VecGen) -> String { format! {"\
     /// # }}
     /// ```
     fn lerp(&self, rhs: &{struct_name}, a: {tpe}) -> {struct_name} {{
-    	self*({one} - a) + rhs*a
+        self*({one} - a) + rhs*a
     }}",
     macro_builder = gen.macro_builder_name,
     struct_name = gen.struct_name,

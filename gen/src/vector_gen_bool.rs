@@ -43,18 +43,18 @@ fn template_file(gen: &VecGen) -> String { format! {"\
 }}
 
 fn template_bool_postfix(gen: &VecGen) -> String { format! { "\
-	{fn_all}
-	
-	{fn_any}
-	
-	{fn_not}",
-	fn_all = fn_all(gen),
-	fn_any = fn_any(gen),
-	fn_not = fn_not(gen),
+    {fn_all}
+    
+    {fn_any}
+    
+    {fn_not}",
+    fn_all = fn_all(gen),
+    fn_any = fn_any(gen),
+    fn_not = fn_not(gen),
 }}
 
 fn fn_all(gen: &VecGen) -> String { format! {"\
-	/// Returns true if all components of the vector are true, false otherwise.
+    /// Returns true if all components of the vector are true, false otherwise.
     ///
     /// # Examples
     ///
@@ -67,19 +67,19 @@ fn fn_all(gen: &VecGen) -> String { format! {"\
     /// assert!(!{macro_builder}!({example_false}).all());
     /// # }}
     /// ```
-	pub fn all(&self) -> bool {{
-		{body}
-	}}",
-	macro_builder = gen.macro_builder_name,
-	body = (0..gen.dims).map(|i| format!("self{}", vec_getter(i))).concat(" && "),
-	example_true = (0..gen.dims).map(|_| "true".to_string()).concat(", "),
-	example_false = (0..gen.dims).map(|i|
-	    if i == 1 { "false".to_string() } else { "true".to_string() }
+    pub fn all(&self) -> bool {{
+        {body}
+    }}",
+    macro_builder = gen.macro_builder_name,
+    body = (0..gen.dims).map(|i| format!("self{}", vec_getter(i))).concat(" && "),
+    example_true = (0..gen.dims).map(|_| "true".to_string()).concat(", "),
+    example_false = (0..gen.dims).map(|i|
+        if i == 1 { "false".to_string() } else { "true".to_string() }
     ).concat(", "),
 }}
 
 fn fn_any(gen: &VecGen) -> String { format! {"\
-	/// Returns true if at least one of the vector components is true, false otherwise.
+    /// Returns true if at least one of the vector components is true, false otherwise.
     ///
     /// # Examples
     ///
@@ -92,19 +92,19 @@ fn fn_any(gen: &VecGen) -> String { format! {"\
     /// assert!(!{macro_builder}!({example_false}).any());
     /// # }}
     /// ```
-	pub fn any(&self) -> bool {{
-		{body}
-	}}",
-	macro_builder = gen.macro_builder_name,
-	body = (0..gen.dims).map(|i| format!("self{}", vec_getter(i))).concat(" || "),
-	example_true = (0..gen.dims).map(|i|
-	    if i == 1 { "true".to_string() } else { "false".to_string() }
+    pub fn any(&self) -> bool {{
+        {body}
+    }}",
+    macro_builder = gen.macro_builder_name,
+    body = (0..gen.dims).map(|i| format!("self{}", vec_getter(i))).concat(" || "),
+    example_true = (0..gen.dims).map(|i|
+        if i == 1 { "true".to_string() } else { "false".to_string() }
     ).concat(", "),
-	example_false = (0..gen.dims).map(|_| "false".to_string()).concat(", "),
+    example_false = (0..gen.dims).map(|_| "false".to_string()).concat(", "),
 }}
 
 fn fn_not(gen: &VecGen) -> String { format! {"\
-	/// Performs component-wise negation of the vector, returning a new vector.
+    /// Performs component-wise negation of the vector, returning a new vector.
     ///
     /// # Examples
     ///
@@ -117,14 +117,14 @@ fn fn_not(gen: &VecGen) -> String { format! {"\
     /// assert_eq!(u.not(), {macro_builder}!({example_res}));
     /// # }}
     /// ```
-	pub fn not(&self) -> {struct_name} {{
-		{struct_name}::new({body})
-	}}",
-	macro_builder = gen.macro_builder_name,
-	struct_name = gen.struct_name,
-	body = (0..gen.dims).map(|i| format!("!self{}", vec_getter(i))).concat(", "),
-	example_args = (0..gen.dims).map(|i| (i % 2 == 0).to_string()).concat(", "),
-	example_res = (0..gen.dims).map(|i| (i % 2 != 0).to_string()).concat(", "),
+    pub fn not(&self) -> {struct_name} {{
+        {struct_name}::new({body})
+    }}",
+    macro_builder = gen.macro_builder_name,
+    struct_name = gen.struct_name,
+    body = (0..gen.dims).map(|i| format!("!self{}", vec_getter(i))).concat(", "),
+    example_args = (0..gen.dims).map(|i| (i % 2 == 0).to_string()).concat(", "),
+    example_res = (0..gen.dims).map(|i| (i % 2 != 0).to_string()).concat(", "),
 }}
 
 fn template_boolean_ops(gen: &VecGen) -> String { format! { "\

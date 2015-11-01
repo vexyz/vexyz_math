@@ -76,7 +76,7 @@ impl<'a> Mat3Mat3Ops<&'a Mat3> for Mat3 {
     /// # }
     /// ```
     fn lerp(&self, rhs: &Mat3, a: f64) -> Mat3 {
-    	let b = 1.0 - a;
+        let b = 1.0 - a;
         Mat3::new(
             self[0]*b + rhs[0]*a, self[1]*b + rhs[1]*a, self[2]*b + rhs[2]*a
         )
@@ -84,7 +84,7 @@ impl<'a> Mat3Mat3Ops<&'a Mat3> for Mat3 {
 }
 
 impl Mat3Mat3Ops<Mat3> for Mat3 {
-	/// Shorthand for `lhs.determinant(&rhs)`.
+    /// Shorthand for `lhs.determinant(&rhs)`.
     #[inline(always)] fn lerp(&self, rhs: Mat3, a: f64) -> Mat3 {
         self.lerp(&rhs, a)
     }
@@ -92,7 +92,7 @@ impl Mat3Mat3Ops<Mat3> for Mat3 {
 
 impl Display for Mat3 {
     fn fmt(&self, f: &mut Formatter) -> Result {
-    	write!(f, "Mat3({}, {}, {})", self[0], self[1], self[2])
+        write!(f, "Mat3({}, {}, {})", self[0], self[1], self[2])
     }
 }
 

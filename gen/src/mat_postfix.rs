@@ -58,37 +58,37 @@ pub fn fn_determinant(gen: &MatGen) -> String {
     match gen.nr_cols {
         2 => format!{"\
     //XXX doc all of these
-	fn determinant(&self) -> {tpe} {{
-		{m00}*{m11} - {m10}*{m01}
-	}}",
-	            tpe = gen.tpe,
-	            m00 = format!("self{}{}", mat_getter(0), vec_getter(0)),
-	            m01 = format!("self{}{}", mat_getter(0), vec_getter(1)),
-	            m10 = format!("self{}{}", mat_getter(1), vec_getter(0)),
-	            m11 = format!("self{}{}", mat_getter(1), vec_getter(1)),
+    fn determinant(&self) -> {tpe} {{
+        {m00}*{m11} - {m10}*{m01}
+    }}",
+                tpe = gen.tpe,
+                m00 = format!("self{}{}", mat_getter(0), vec_getter(0)),
+                m01 = format!("self{}{}", mat_getter(0), vec_getter(1)),
+                m10 = format!("self{}{}", mat_getter(1), vec_getter(0)),
+                m11 = format!("self{}{}", mat_getter(1), vec_getter(1)),
             },
         3 => format!{"\
-	fn determinant(&self) -> {tpe} {{
-		let a0 = {m11}*{m22} - {m21}*{m12};
+    fn determinant(&self) -> {tpe} {{
+        let a0 = {m11}*{m22} - {m21}*{m12};
         let a1 = {m21}*{m02} - {m01}*{m22};
         let a2 = {m01}*{m12} - {m11}*{m02};
     
         {m00}*a0 + {m10}*a1 + {m20}*a2
-	}}",
-	            tpe = gen.tpe,
-	            m00 = format!("self{}{}", mat_getter(0), vec_getter(0)),
-	            m01 = format!("self{}{}", mat_getter(0), vec_getter(1)),
-	            m02 = format!("self{}{}", mat_getter(0), vec_getter(2)),
-	            m10 = format!("self{}{}", mat_getter(1), vec_getter(0)),
-	            m11 = format!("self{}{}", mat_getter(1), vec_getter(1)),
-	            m12 = format!("self{}{}", mat_getter(1), vec_getter(2)),
-	            m20 = format!("self{}{}", mat_getter(2), vec_getter(0)),
-	            m21 = format!("self{}{}", mat_getter(2), vec_getter(1)),
-	            m22 = format!("self{}{}", mat_getter(2), vec_getter(2)),
+    }}",
+                tpe = gen.tpe,
+                m00 = format!("self{}{}", mat_getter(0), vec_getter(0)),
+                m01 = format!("self{}{}", mat_getter(0), vec_getter(1)),
+                m02 = format!("self{}{}", mat_getter(0), vec_getter(2)),
+                m10 = format!("self{}{}", mat_getter(1), vec_getter(0)),
+                m11 = format!("self{}{}", mat_getter(1), vec_getter(1)),
+                m12 = format!("self{}{}", mat_getter(1), vec_getter(2)),
+                m20 = format!("self{}{}", mat_getter(2), vec_getter(0)),
+                m21 = format!("self{}{}", mat_getter(2), vec_getter(1)),
+                m22 = format!("self{}{}", mat_getter(2), vec_getter(2)),
             },
         4 => format!{"\
-	fn determinant(&self) -> {tpe} {{
-		let a0 = {m00}*{m11} - {m10}*{m01};
+    fn determinant(&self) -> {tpe} {{
+        let a0 = {m00}*{m11} - {m10}*{m01};
         let a1 = {m00}*{m21} - {m20}*{m01};
         let a2 = {m00}*{m31} - {m30}*{m01};
         let a3 = {m10}*{m21} - {m20}*{m11};
@@ -102,24 +102,24 @@ pub fn fn_determinant(gen: &MatGen) -> String {
         let b5 = {m22}*{m33} - {m32}*{m23};
     
         a0*b5 - a1*b4 + a2*b3 + a3*b2 - a4*b1 + a5*b0
-	}}",
-	            tpe = gen.tpe,
-	            m00 = format!("self{}{}", mat_getter(0), vec_getter(0)),
-	            m01 = format!("self{}{}", mat_getter(0), vec_getter(1)),
-	            m02 = format!("self{}{}", mat_getter(0), vec_getter(2)),
-	            m03 = format!("self{}{}", mat_getter(0), vec_getter(3)),
-	            m10 = format!("self{}{}", mat_getter(1), vec_getter(0)),
-	            m11 = format!("self{}{}", mat_getter(1), vec_getter(1)),
-	            m12 = format!("self{}{}", mat_getter(1), vec_getter(2)),
-	            m13 = format!("self{}{}", mat_getter(1), vec_getter(3)),
-	            m20 = format!("self{}{}", mat_getter(2), vec_getter(0)),
-	            m21 = format!("self{}{}", mat_getter(2), vec_getter(1)),
-	            m22 = format!("self{}{}", mat_getter(2), vec_getter(2)),
-	            m23 = format!("self{}{}", mat_getter(2), vec_getter(3)),
-	            m30 = format!("self{}{}", mat_getter(3), vec_getter(0)),
-	            m31 = format!("self{}{}", mat_getter(3), vec_getter(1)),
-	            m32 = format!("self{}{}", mat_getter(3), vec_getter(2)),
-	            m33 = format!("self{}{}", mat_getter(3), vec_getter(3)),
+    }}",
+                tpe = gen.tpe,
+                m00 = format!("self{}{}", mat_getter(0), vec_getter(0)),
+                m01 = format!("self{}{}", mat_getter(0), vec_getter(1)),
+                m02 = format!("self{}{}", mat_getter(0), vec_getter(2)),
+                m03 = format!("self{}{}", mat_getter(0), vec_getter(3)),
+                m10 = format!("self{}{}", mat_getter(1), vec_getter(0)),
+                m11 = format!("self{}{}", mat_getter(1), vec_getter(1)),
+                m12 = format!("self{}{}", mat_getter(1), vec_getter(2)),
+                m13 = format!("self{}{}", mat_getter(1), vec_getter(3)),
+                m20 = format!("self{}{}", mat_getter(2), vec_getter(0)),
+                m21 = format!("self{}{}", mat_getter(2), vec_getter(1)),
+                m22 = format!("self{}{}", mat_getter(2), vec_getter(2)),
+                m23 = format!("self{}{}", mat_getter(2), vec_getter(3)),
+                m30 = format!("self{}{}", mat_getter(3), vec_getter(0)),
+                m31 = format!("self{}{}", mat_getter(3), vec_getter(1)),
+                m32 = format!("self{}{}", mat_getter(3), vec_getter(2)),
+                m33 = format!("self{}{}", mat_getter(3), vec_getter(3)),
             },
         _ => unreachable!(),
     }

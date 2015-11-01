@@ -94,7 +94,7 @@ fn fn_new(gen: &MatGen) -> String { format! {"\
 pub fn trait_display(gen: &MatGen) -> String { format! {"\
 impl Display for {struct_name} {{
     fn fmt(&self, f: &mut Formatter) -> Result {{
-    	write!(f, \"{struct_name}({tokens})\", {body})
+        write!(f, \"{struct_name}({tokens})\", {body})
     }}
 }}",
     struct_name = gen.struct_name,

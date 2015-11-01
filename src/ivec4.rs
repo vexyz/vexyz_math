@@ -31,7 +31,7 @@ impl Vec4i {
     /// Component accessor, returns the 4th component of the vector.
     #[inline(always)] pub fn w(&self) -> i32 { self[3] }
     
-	
+    
     /// Color-style component accessor, returns the 1st component of the vector.
     #[inline(always)] pub fn r(&self) -> i32 { self[0] }
 
@@ -43,8 +43,8 @@ impl Vec4i {
 
     /// Color-style component accessor, returns the 4th component of the vector.
     #[inline(always)] pub fn a(&self) -> i32 { self[3] }
-	
-	/// Returns the sum of vector components.
+    
+    /// Returns the sum of vector components.
     ///
     /// # Examples
     ///
@@ -60,8 +60,8 @@ impl Vec4i {
     pub fn sum(&self) -> i32 {
         self[0] + self[1] + self[2] + self[3]
     }
-	
-	/// Performs `abs()` on each component, producing a new vector.
+    
+    /// Performs `abs()` on each component, producing a new vector.
     ///
     /// # Examples
     ///
@@ -230,7 +230,7 @@ impl<'a> Vec4iOps<&'a Vec4i> for Vec4i {
 }
 
 impl Vec4iOps<Vec4i> for Vec4i {
-	/// Shorthand for `lhs.less_than(&rhs)`.
+    /// Shorthand for `lhs.less_than(&rhs)`.
     #[inline(always)] fn less_than(&self, rhs: Vec4i) -> Vec4b {
         self.less_than(&rhs)
     }
@@ -268,7 +268,7 @@ impl Vec4iOps<Vec4i> for Vec4i {
 
 impl Display for Vec4i {
     fn fmt(&self, f: &mut Formatter) -> Result {
-    	write!(f, "Vec4i({}, {}, {}, {})", self[0], self[1], self[2], self[3])
+        write!(f, "Vec4i({}, {}, {}, {})", self[0], self[1], self[2], self[3])
     }
 }
 

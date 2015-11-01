@@ -25,14 +25,14 @@ impl Vec2 {
     /// Component accessor, returns the 2nd component of the vector.
     #[inline(always)] pub fn y(&self) -> f64 { self[1] }
     
-	
+    
     /// Color-style component accessor, returns the 1st component of the vector.
     #[inline(always)] pub fn r(&self) -> f64 { self[0] }
 
     /// Color-style component accessor, returns the 2nd component of the vector.
     #[inline(always)] pub fn g(&self) -> f64 { self[1] }
-	
-	/// Returns the sum of vector components.
+    
+    /// Returns the sum of vector components.
     ///
     /// # Examples
     ///
@@ -48,8 +48,8 @@ impl Vec2 {
     pub fn sum(&self) -> f64 {
         self[0] + self[1]
     }
-	
-	/// Performs `abs()` on each component, producing a new vector.
+    
+    /// Performs `abs()` on each component, producing a new vector.
     ///
     /// # Examples
     ///
@@ -65,8 +65,8 @@ impl Vec2 {
     pub fn abs(&self) -> Vec2 {
         Vec2::new(self[0].abs(), self[1].abs())
     }
-	
-	/// Computes the length of the vector.
+    
+    /// Computes the length of the vector.
     ///
     /// # Examples
     ///
@@ -79,9 +79,9 @@ impl Vec2 {
     /// assert_eq!(u.length(), ((20*20 + 30*30) as f64).sqrt());
     /// # }
     /// ```
-	pub fn length(&self) -> f64 {
-		self.dot(self).sqrt()
-	}
+    pub fn length(&self) -> f64 {
+        self.dot(self).sqrt()
+    }
 }
 
 pub trait Vec2Ops<Rhs> {
@@ -234,7 +234,7 @@ impl<'a> Vec2Ops<&'a Vec2> for Vec2 {
     /// # }
     /// ```
     fn approx_equal(&self, rhs: &Vec2, eps: f64) -> bool {
-    	let eps = Vec2::new(eps, eps);
+        let eps = Vec2::new(eps, eps);
         (self - rhs).abs().less_than(eps).all()
     }
 
@@ -272,12 +272,12 @@ impl<'a> Vec2Ops<&'a Vec2> for Vec2 {
     /// # }
     /// ```
     fn lerp(&self, rhs: &Vec2, a: f64) -> Vec2 {
-    	self*(1.0 - a) + rhs*a
+        self*(1.0 - a) + rhs*a
     }
 }
 
 impl Vec2Ops<Vec2> for Vec2 {
-	/// Shorthand for `lhs.less_than(&rhs)`.
+    /// Shorthand for `lhs.less_than(&rhs)`.
     #[inline(always)] fn less_than(&self, rhs: Vec2) -> Vec2b {
         self.less_than(&rhs)
     }
@@ -325,7 +325,7 @@ impl Vec2Ops<Vec2> for Vec2 {
 
 impl Display for Vec2 {
     fn fmt(&self, f: &mut Formatter) -> Result {
-    	write!(f, "Vec2({}, {})", self[0], self[1])
+        write!(f, "Vec2({}, {})", self[0], self[1])
     }
 }
 

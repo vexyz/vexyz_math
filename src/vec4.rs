@@ -31,7 +31,7 @@ impl Vec4 {
     /// Component accessor, returns the 4th component of the vector.
     #[inline(always)] pub fn w(&self) -> f64 { self[3] }
     
-	
+    
     /// Color-style component accessor, returns the 1st component of the vector.
     #[inline(always)] pub fn r(&self) -> f64 { self[0] }
 
@@ -43,8 +43,8 @@ impl Vec4 {
 
     /// Color-style component accessor, returns the 4th component of the vector.
     #[inline(always)] pub fn a(&self) -> f64 { self[3] }
-	
-	/// Returns the sum of vector components.
+    
+    /// Returns the sum of vector components.
     ///
     /// # Examples
     ///
@@ -60,8 +60,8 @@ impl Vec4 {
     pub fn sum(&self) -> f64 {
         self[0] + self[1] + self[2] + self[3]
     }
-	
-	/// Performs `abs()` on each component, producing a new vector.
+    
+    /// Performs `abs()` on each component, producing a new vector.
     ///
     /// # Examples
     ///
@@ -77,8 +77,8 @@ impl Vec4 {
     pub fn abs(&self) -> Vec4 {
         Vec4::new(self[0].abs(), self[1].abs(), self[2].abs(), self[3].abs())
     }
-	
-	/// Computes the length of the vector.
+    
+    /// Computes the length of the vector.
     ///
     /// # Examples
     ///
@@ -91,9 +91,9 @@ impl Vec4 {
     /// assert_eq!(u.length(), ((20*20 + 30*30 + 40*40 + 50*50) as f64).sqrt());
     /// # }
     /// ```
-	pub fn length(&self) -> f64 {
-		self.dot(self).sqrt()
-	}
+    pub fn length(&self) -> f64 {
+        self.dot(self).sqrt()
+    }
 }
 
 pub trait Vec4Ops<Rhs> {
@@ -246,7 +246,7 @@ impl<'a> Vec4Ops<&'a Vec4> for Vec4 {
     /// # }
     /// ```
     fn approx_equal(&self, rhs: &Vec4, eps: f64) -> bool {
-    	let eps = Vec4::new(eps, eps, eps, eps);
+        let eps = Vec4::new(eps, eps, eps, eps);
         (self - rhs).abs().less_than(eps).all()
     }
 
@@ -284,12 +284,12 @@ impl<'a> Vec4Ops<&'a Vec4> for Vec4 {
     /// # }
     /// ```
     fn lerp(&self, rhs: &Vec4, a: f64) -> Vec4 {
-    	self*(1.0 - a) + rhs*a
+        self*(1.0 - a) + rhs*a
     }
 }
 
 impl Vec4Ops<Vec4> for Vec4 {
-	/// Shorthand for `lhs.less_than(&rhs)`.
+    /// Shorthand for `lhs.less_than(&rhs)`.
     #[inline(always)] fn less_than(&self, rhs: Vec4) -> Vec4b {
         self.less_than(&rhs)
     }
@@ -337,7 +337,7 @@ impl Vec4Ops<Vec4> for Vec4 {
 
 impl Display for Vec4 {
     fn fmt(&self, f: &mut Formatter) -> Result {
-    	write!(f, "Vec4({}, {}, {}, {})", self[0], self[1], self[2], self[3])
+        write!(f, "Vec4({}, {}, {}, {})", self[0], self[1], self[2], self[3])
     }
 }
 

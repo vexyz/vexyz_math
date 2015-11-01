@@ -71,7 +71,7 @@ impl<'a> Mat2Mat2Ops<&'a Mat2> for Mat2 {
     /// # }
     /// ```
     fn lerp(&self, rhs: &Mat2, a: f64) -> Mat2 {
-    	let b = 1.0 - a;
+        let b = 1.0 - a;
         Mat2::new(
             self[0]*b + rhs[0]*a, self[1]*b + rhs[1]*a
         )
@@ -79,7 +79,7 @@ impl<'a> Mat2Mat2Ops<&'a Mat2> for Mat2 {
 }
 
 impl Mat2Mat2Ops<Mat2> for Mat2 {
-	/// Shorthand for `lhs.determinant(&rhs)`.
+    /// Shorthand for `lhs.determinant(&rhs)`.
     #[inline(always)] fn lerp(&self, rhs: Mat2, a: f64) -> Mat2 {
         self.lerp(&rhs, a)
     }
@@ -87,7 +87,7 @@ impl Mat2Mat2Ops<Mat2> for Mat2 {
 
 impl Display for Mat2 {
     fn fmt(&self, f: &mut Formatter) -> Result {
-    	write!(f, "Mat2({}, {})", self[0], self[1])
+        write!(f, "Mat2({}, {})", self[0], self[1])
     }
 }
 

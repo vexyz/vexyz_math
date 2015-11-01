@@ -21,7 +21,7 @@ impl<'a> {struct_name}{name}Ops<&'a {rhs_tpe}> for {struct_name} {{
 }}
 
 impl {struct_name}{name}Ops<{rhs_tpe}> for {struct_name} {{
-	{shorthands}
+    {shorthands}
 }}",
     struct_name = gen.struct_name,
     name = name,
@@ -69,7 +69,7 @@ fn fn_lerp(gen: &MatGen) -> String { format! {"\
     /// # }}
     /// ```
     fn lerp(&self, rhs: &{struct_name}, a: {tpe}) -> {struct_name} {{
-    	let b = {one} - a;
+        let b = {one} - a;
         {struct_name}::new(
             {body}
         )

@@ -30,7 +30,7 @@ impl Vec4b {
     /// Component accessor, returns the 4th component of the vector.
     #[inline(always)] pub fn w(&self) -> bool { self[3] }
     
-	
+    
     /// Color-style component accessor, returns the 1st component of the vector.
     #[inline(always)] pub fn r(&self) -> bool { self[0] }
 
@@ -42,8 +42,8 @@ impl Vec4b {
 
     /// Color-style component accessor, returns the 4th component of the vector.
     #[inline(always)] pub fn a(&self) -> bool { self[3] }
-	
-	/// Returns true if all components of the vector are true, false otherwise.
+    
+    /// Returns true if all components of the vector are true, false otherwise.
     ///
     /// # Examples
     ///
@@ -56,11 +56,11 @@ impl Vec4b {
     /// assert!(!bvec4!(true, false, true, true).all());
     /// # }
     /// ```
-	pub fn all(&self) -> bool {
-		self[0] && self[1] && self[2] && self[3]
-	}
-	
-	/// Returns true if at least one of the vector components is true, false otherwise.
+    pub fn all(&self) -> bool {
+        self[0] && self[1] && self[2] && self[3]
+    }
+    
+    /// Returns true if at least one of the vector components is true, false otherwise.
     ///
     /// # Examples
     ///
@@ -73,11 +73,11 @@ impl Vec4b {
     /// assert!(!bvec4!(false, false, false, false).any());
     /// # }
     /// ```
-	pub fn any(&self) -> bool {
-		self[0] || self[1] || self[2] || self[3]
-	}
-	
-	/// Performs component-wise negation of the vector, returning a new vector.
+    pub fn any(&self) -> bool {
+        self[0] || self[1] || self[2] || self[3]
+    }
+    
+    /// Performs component-wise negation of the vector, returning a new vector.
     ///
     /// # Examples
     ///
@@ -90,14 +90,14 @@ impl Vec4b {
     /// assert_eq!(u.not(), bvec4!(false, true, false, true));
     /// # }
     /// ```
-	pub fn not(&self) -> Vec4b {
-		Vec4b::new(!self[0], !self[1], !self[2], !self[3])
-	}
+    pub fn not(&self) -> Vec4b {
+        Vec4b::new(!self[0], !self[1], !self[2], !self[3])
+    }
 }
 
 impl Display for Vec4b {
     fn fmt(&self, f: &mut Formatter) -> Result {
-    	write!(f, "Vec4b({}, {}, {}, {})", self[0], self[1], self[2], self[3])
+        write!(f, "Vec4b({}, {}, {}, {})", self[0], self[1], self[2], self[3])
     }
 }
 

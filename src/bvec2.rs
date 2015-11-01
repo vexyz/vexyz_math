@@ -24,14 +24,14 @@ impl Vec2b {
     /// Component accessor, returns the 2nd component of the vector.
     #[inline(always)] pub fn y(&self) -> bool { self[1] }
     
-	
+    
     /// Color-style component accessor, returns the 1st component of the vector.
     #[inline(always)] pub fn r(&self) -> bool { self[0] }
 
     /// Color-style component accessor, returns the 2nd component of the vector.
     #[inline(always)] pub fn g(&self) -> bool { self[1] }
-	
-	/// Returns true if all components of the vector are true, false otherwise.
+    
+    /// Returns true if all components of the vector are true, false otherwise.
     ///
     /// # Examples
     ///
@@ -44,11 +44,11 @@ impl Vec2b {
     /// assert!(!bvec2!(true, false).all());
     /// # }
     /// ```
-	pub fn all(&self) -> bool {
-		self[0] && self[1]
-	}
-	
-	/// Returns true if at least one of the vector components is true, false otherwise.
+    pub fn all(&self) -> bool {
+        self[0] && self[1]
+    }
+    
+    /// Returns true if at least one of the vector components is true, false otherwise.
     ///
     /// # Examples
     ///
@@ -61,11 +61,11 @@ impl Vec2b {
     /// assert!(!bvec2!(false, false).any());
     /// # }
     /// ```
-	pub fn any(&self) -> bool {
-		self[0] || self[1]
-	}
-	
-	/// Performs component-wise negation of the vector, returning a new vector.
+    pub fn any(&self) -> bool {
+        self[0] || self[1]
+    }
+    
+    /// Performs component-wise negation of the vector, returning a new vector.
     ///
     /// # Examples
     ///
@@ -78,14 +78,14 @@ impl Vec2b {
     /// assert_eq!(u.not(), bvec2!(false, true));
     /// # }
     /// ```
-	pub fn not(&self) -> Vec2b {
-		Vec2b::new(!self[0], !self[1])
-	}
+    pub fn not(&self) -> Vec2b {
+        Vec2b::new(!self[0], !self[1])
+    }
 }
 
 impl Display for Vec2b {
     fn fmt(&self, f: &mut Formatter) -> Result {
-    	write!(f, "Vec2b({}, {})", self[0], self[1])
+        write!(f, "Vec2b({}, {})", self[0], self[1])
     }
 }
 

@@ -25,14 +25,14 @@ impl Vec2i {
     /// Component accessor, returns the 2nd component of the vector.
     #[inline(always)] pub fn y(&self) -> i32 { self[1] }
     
-	
+    
     /// Color-style component accessor, returns the 1st component of the vector.
     #[inline(always)] pub fn r(&self) -> i32 { self[0] }
 
     /// Color-style component accessor, returns the 2nd component of the vector.
     #[inline(always)] pub fn g(&self) -> i32 { self[1] }
-	
-	/// Returns the sum of vector components.
+    
+    /// Returns the sum of vector components.
     ///
     /// # Examples
     ///
@@ -48,8 +48,8 @@ impl Vec2i {
     pub fn sum(&self) -> i32 {
         self[0] + self[1]
     }
-	
-	/// Performs `abs()` on each component, producing a new vector.
+    
+    /// Performs `abs()` on each component, producing a new vector.
     ///
     /// # Examples
     ///
@@ -218,7 +218,7 @@ impl<'a> Vec2iOps<&'a Vec2i> for Vec2i {
 }
 
 impl Vec2iOps<Vec2i> for Vec2i {
-	/// Shorthand for `lhs.less_than(&rhs)`.
+    /// Shorthand for `lhs.less_than(&rhs)`.
     #[inline(always)] fn less_than(&self, rhs: Vec2i) -> Vec2b {
         self.less_than(&rhs)
     }
@@ -256,7 +256,7 @@ impl Vec2iOps<Vec2i> for Vec2i {
 
 impl Display for Vec2i {
     fn fmt(&self, f: &mut Formatter) -> Result {
-    	write!(f, "Vec2i({}, {})", self[0], self[1])
+        write!(f, "Vec2i({}, {})", self[0], self[1])
     }
 }
 

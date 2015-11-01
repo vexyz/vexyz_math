@@ -26,7 +26,12 @@ impl VecGen {
     }
     
     pub fn getters(&self) -> Box<Iterator<Item = String>> {
-        Box::new((0 .. self.dims).map(|i| vec_getter(i)))
+        if self.quaternion_override {
+            Box::new((0 .. self.dims).map(|i| quat_getter(i)))
+        }
+        else {
+            Box::new((0 .. self.dims).map(|i| vec_getter(i)))
+        }
     }
     
     pub fn ordinals(&self) -> Box<Iterator<Item = String>> {
@@ -67,6 +72,20 @@ impl VecGen {
     
     pub fn deltas(&self) -> Box<Iterator<Item = String>> {
         Box::new((0 .. self.dims).map(|i| DELTAS[i].to_string()))
+    }
+    
+    pub fn eps_high(&self) -> String {
+        match self.tpe {
+            Type::Bool | Type::I32 => panic!("{} does not have eps.", self.tpe),
+            Type::F64 => "1e-9".to_string(),
+        }
+    }
+    
+    pub fn eps_low(&self) -> String {
+        match self.tpe {
+            Type::Bool | Type::I32 => panic!("{} does not have eps.", self.tpe),
+            Type::F64 => "1e-8".to_string(),
+        }
     }
 }
 
@@ -142,9 +161,9 @@ impl {struct_name} {{
     
     {accessors_primary}
     
-	{accessors_secondary}
-	
-	{template_postfix}
+    {accessors_secondary}
+    
+    {template_postfix}
 }}",
     struct_name = gen.struct_name,
     fn_new = fn_new(gen),
@@ -156,9 +175,9 @@ impl {struct_name} {{
 }}
 
 pub fn template_common_num_postfix(gen: &VecGen) -> String { format!{"\
-	{fn_sum}
-	
-	{fn_abs}",
+    {fn_sum}
+    
+    {fn_abs}",
     fn_sum = fn_sum(gen),
     fn_abs = fn_abs(gen),
 }}
@@ -184,7 +203,7 @@ impl<'a> {struct_name}{name}Ops<&'a {rhs_tpe}> for {struct_name} {{
 }}
 
 impl {struct_name}{name}Ops<{rhs_tpe}> for {struct_name} {{
-	{shorthands}
+    {shorthands}
 }}",
     struct_name = gen.struct_name,
     name = name,
@@ -311,17 +330,17 @@ fn fn_approx_equal(gen: &VecGen) -> String { format! {"\
     /// # }}
     /// ```
     fn approx_equal(&self, rhs: &{struct_name}, eps: {tpe}) -> bool {{
-    	let eps = {struct_name}::new({eps_body});
+        let eps = {struct_name}::new({eps_body});
         (self - rhs).abs().less_than(eps).all()
     }}",
     macro_builder = gen.macro_builder_name,
     struct_name = gen.struct_name,
     tpe = gen.tpe,
     val_name = gen.val_name,
-    eps = coerce(gen.tpe, "1e-8"),
+    eps = gen.eps_low(),
     eps_body = (0..gen.dims).map(|_| coerce(gen.tpe, "eps")).concat(", "),
-    delta_eq = coerce(gen.tpe, "1e-9"),
-    delta_ne = coerce(gen.tpe, "1e-8"),
+    delta_eq = gen.eps_high(),
+    delta_ne = gen.eps_low(),
     example_lhs = (0..gen.dims).map(|i| gen.lhs(i)).concat(", "),
 }}
 
@@ -437,7 +456,7 @@ fn template_fn_compare(
 pub fn trait_display(gen: &VecGen) -> String { format! {"\
 impl Display for {struct_name} {{
     fn fmt(&self, f: &mut Formatter) -> Result {{
-    	write!(f, \"{struct_name}({tokens})\", {body})
+        write!(f, \"{struct_name}({tokens})\", {body})
     }}
 }}",
     struct_name = gen.struct_name,
