@@ -3,8 +3,6 @@ use util::*;
 use vec_common;
 use vec_common::VecGen;
 
-static ABCD: [&'static str; 4] = ["a", "b", "c", "d"];
-
 struct Namespace {
     vec3_struct_name: String,
     vec3_macro_builder: String,
@@ -15,7 +13,7 @@ struct Namespace {
 pub fn gen_quaternion() -> String {
     let gen = &VecGen {
         struct_name: "Quat".to_string(),
-        tpe: Type::F64,
+        tpe: Type::F32,
         dims: 4,
         macro_builder_name: "quat".to_string(),
         all_ordinals: &ABCD,
@@ -48,6 +46,8 @@ fn template_file(gen: &VecGen, namespace: &Namespace) -> String { format! {"\
 
 {op_index}
 
+{op_index_mut}
+
 {template_common_num_ops}
 
 {op_neg}
@@ -77,6 +77,7 @@ fn template_file(gen: &VecGen, namespace: &Namespace) -> String { format! {"\
     ),
     trait_display = vec_common::trait_display(gen),
     op_index = vec_common::op_index(gen),
+    op_index_mut = vec_common::op_index_mut(gen),
     template_common_num_ops = vec_common::template_common_num_ops(gen, op_mul_quat(gen)),
     op_neg = vec_common::op_neg(gen),
     macro_builder = macro_builder(gen),
@@ -154,8 +155,8 @@ impl<'a, 'b> Mul<&'b {struct_name}> for &'a {struct_name} {{
     /// use vexyz_math::*;
     ///
     /// # fn main() {{
-    /// let q0 = quat!().rotate_x(90_{tpe}.to_radians());
-    /// let q1 = quat!().rotate_y(90_{tpe}.to_radians());
+    /// let q0 = quat!().rotate_x(90_{tpe}.to_rad());
+    /// let q1 = quat!().rotate_y(90_{tpe}.to_rad());
     /// assert_eq!(q1*q0, q0.rotate(q1));
     /// # }}
     /// ```
@@ -258,8 +259,8 @@ fn fn_rotate(gen: &VecGen, namespace: &Namespace) -> String { format! {"\
     /// use vexyz_math::*;
     ///
     /// # fn main() {{
-    /// let q0 = quat!().rotate_x(90_{tpe}.to_radians());
-    /// let q1 = quat!().rotate_y(90_{tpe}.to_radians());
+    /// let q0 = quat!().rotate_x(90_{tpe}.to_rad());
+    /// let q1 = quat!().rotate_y(90_{tpe}.to_rad());
     /// let q = q0.rotate(q1);
     /// let u = q.rotate_vec({vec3_macro_builder}!(1, 1, 0));
     /// assert!(u.approx_equal({vec3_macro_builder}!(1, 0, -1), {eps}));
@@ -303,7 +304,7 @@ fn fn_rotate_vec(gen: &VecGen, namespace: &Namespace) -> String {
     /// use vexyz_math::*;
     ///
     /// # fn main() {{
-    /// let q = quat!().rotate_y(90_{tpe}.to_radians());
+    /// let q = quat!().rotate_y(90_{tpe}.to_rad());
     /// let u = q.rotate_vec({vec3_macro_builder}!(1, 1, 0));
     /// assert!(u.approx_equal({vec3_macro_builder}!(0, 1, -1), {eps}));
     /// # }}
@@ -344,7 +345,7 @@ fn template_rotate_xyz(gen: &VecGen, namespace: &Namespace) -> String { format! 
     /// use vexyz_math::*;
     ///
     /// # fn main() {{
-    /// let q = quat!().rotate_x(90_{tpe}.to_radians());
+    /// let q = quat!().rotate_x(90_{tpe}.to_rad());
     /// let u = q.rotate_vec({vec3_macro_builder}!(1, 1, 0));
     /// assert!(u.approx_equal({vec3_macro_builder}!(1, 0, 1), {eps}));
     /// # }}
@@ -368,7 +369,7 @@ fn template_rotate_xyz(gen: &VecGen, namespace: &Namespace) -> String { format! 
     /// use vexyz_math::*;
     ///
     /// # fn main() {{
-    /// let q = quat!().rotate_y(90_{tpe}.to_radians());
+    /// let q = quat!().rotate_y(90_{tpe}.to_rad());
     /// let u = q.rotate_vec({vec3_macro_builder}!(1, 1, 0));
     /// assert!(u.approx_equal({vec3_macro_builder}!(0, 1, -1), {eps}));
     /// # }}
@@ -392,7 +393,7 @@ fn template_rotate_xyz(gen: &VecGen, namespace: &Namespace) -> String { format! 
     /// use vexyz_math::*;
     ///
     /// # fn main() {{
-    /// let q = quat!().rotate_z(90_{tpe}.to_radians());
+    /// let q = quat!().rotate_z(90_{tpe}.to_rad());
     /// let u = q.rotate_vec({vec3_macro_builder}!(0, 1, 1));
     /// assert!(u.approx_equal({vec3_macro_builder}!(-1, 0, 1), {eps}));
     /// # }}
@@ -509,7 +510,7 @@ fn fn_norm(gen: &VecGen) -> String { format! {"\
     example_args = (0..gen.dims).map(|i| gen.lhs(i)).concat(", "),
     example_res = (0..gen.dims).map(|i|
         format!("{s}*{s}", s = gen.lhs(i))
-    ).mk_string("((", " + ", ") as f64).sqrt()"),
+    ).mk_string("((", " + ", &format!(") as {}).sqrt()", gen.tpe)),
 }}
 
 fn fn_normalize(gen: &VecGen) -> String {
@@ -575,7 +576,7 @@ fn fn_inverse(gen: &VecGen, namespace: &Namespace) -> String {
     /// use vexyz_math::*;
     ///
     /// # fn main() {{
-    /// let q = quat!().rotate_x(90_{tpe}.to_radians());
+    /// let q = quat!().rotate_x(90_{tpe}.to_rad());
     /// let u = q.rotate_vec({vec3_macro_builder}!(1, 1, 0));
     /// let v = q.inverse().rotate_vec(u);
     /// assert!(v.approx_equal({vec3_macro_builder}!(1, 1, 0), {eps}));

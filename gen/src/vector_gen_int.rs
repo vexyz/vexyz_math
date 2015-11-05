@@ -8,7 +8,7 @@ pub fn gen_int_vector(n: usize) -> String {
         tpe: Type::I32,
         dims: n,
         macro_builder_name: format!("ivec{}", n),
-        all_ordinals: &vec_common::XYZW,
+        all_ordinals: &XYZW,
         doc_name: "vector".to_string(),
         val_name: "u".to_string(),
         quaternion_override: false,
@@ -29,6 +29,8 @@ fn template_file(gen: &VecGen) -> String { format! {"\
 {trait_display}
 
 {op_index}
+
+{op_index_mut}
 
 {template_common_num_ops}
 
@@ -51,6 +53,7 @@ fn template_file(gen: &VecGen) -> String { format! {"\
     }),
     trait_display = vec_common::trait_display(gen),
     op_index = vec_common::op_index(gen),
+    op_index_mut = vec_common::op_index_mut(gen),
     template_common_num_ops = vec_common::template_common_num_ops(gen,
         vec_common::op_mul_vec(gen)
     ),

@@ -28,11 +28,11 @@ impl MatGen {
     }
     
     pub fn lhs(&self, c: usize, r: usize) -> String {
-        format!("{}.{}", c, r + 1)
+        format!("{}{}.0", c + 1, r + 1)
     }
     
     pub fn rhs(&self, c: usize, r: usize) -> String {
-        format!("{}.{}", c, r + 5)
+        format!("{}{}.0", c + 1, r + 5)
     }
     
     pub fn lhs_col(&self, c: usize) -> String {
@@ -41,5 +41,11 @@ impl MatGen {
     
     pub fn rhs_col(&self, c: usize) -> String {
         (0..self.nr_rows).map(|r| self.rhs(c, r)).concat(", ")
+    }
+    
+    pub fn doc_orthogonal_matrix(&self) -> String {"\
+    /// When all the matrix columns are orthogonal to each other, and each column has a unit length,
+    /// then the matrix is called 'orthogonal matrix'. Orthogonal matrices represent rotation.
+    /// Transpose of an orthogonal matrix is equal to its inverse.".to_string()
     }
 }

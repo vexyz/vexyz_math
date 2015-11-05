@@ -3,6 +3,64 @@ use mat_common::*;
 use util::*;
 use std::iter::*;
 
+pub fn template_ops(gen: &MatGen) -> String { format! { "\
+{op_index}
+
+{op_index_mut}
+
+{op_add_mat}
+
+{op_add_scalar}
+
+{op_sub_mat}
+
+{op_sub_scalar}
+
+{op_mul_mat}
+
+{op_mul_vec}
+
+{op_mul_scalar}
+
+{op_div_mat}
+
+{op_div_scalar}
+
+{op_neg}",
+    op_index = op_index(gen),
+    
+    op_index_mut = op_index_mut(gen),
+
+    op_add_mat = template_op_bin_mat(gen, "Add", "add", "+",
+        "Performs component-wise addition of two matrices"),
+    
+    op_sub_mat = template_op_bin_mat(gen, "Sub", "sub", "-",
+        "Subtracts each component of the `rhs` matrix from the \
+        \n    /// corresponding component of the `lhs` matrix"),
+    
+    op_div_mat = template_op_bin_mat(gen, "Div", "div", "/",
+        "Divides each component of the `lhs` matrix by the \
+        \n    /// corresponding component of the `rhs` matrix"),
+
+    op_mul_mat = template_mul_mat(gen),
+        
+    op_mul_vec = template_mul_vec(gen),
+    
+    op_add_scalar = template_op_bin_scalar(gen, "Add", "add", "+",
+        "Adds a scalar to each component of a matrix"),
+    
+    op_sub_scalar = template_op_bin_scalar(gen, "Sub", "sub", "-",
+        "Subtracts a scalar from each component of a matrix"),
+    
+    op_mul_scalar = template_op_bin_scalar(gen, "Mul", "mul", "*",
+        "Multiplies each component of a matrix by a scalar"),
+    
+    op_div_scalar = template_op_bin_scalar(gen, "Div", "div", "/",
+        "Divides each component of a {doc_name} by a scalar"),
+    
+    op_neg = template_op_unary(gen, "Neg", "neg", "-", "negation"),
+}}
+
 pub fn op_index(gen: &MatGen) -> String { format! {"\
 impl Index<usize> for {struct_name} {{
     type Output = {col_tpe};
@@ -40,58 +98,50 @@ impl Index<usize> for {struct_name} {{
     example_res = (0..gen.nr_cols).map(|i| format!("m[{}]", i)).concat(", "),
 }}
 
-pub fn template_ops(gen: &MatGen) -> String { format! { "\
-{op_index}
-
-{op_add_mat}
-
-{op_add_scalar}
-
-{op_sub_mat}
-
-{op_sub_scalar}
-
-{op_mul_mat}
-
-{op_mul_vec}
-
-{op_mul_scalar}
-
-{op_div_mat}
-
-{op_div_scalar}
-
-{op_neg}",
-    op_index = op_index(gen),
-
-    op_add_mat = template_op_bin_mat(gen, "Add", "add", "+",
-        "Performs component-wise addition of two matrices"),
+pub fn op_index_mut(gen: &MatGen) -> String { format! {"\
+impl IndexMut<usize> for {struct_name} {{
     
-    op_sub_mat = template_op_bin_mat(gen, "Sub", "sub", "-",
-        "Subtracts each component of the `rhs` matrix from the \
-        \n    /// corresponding component of the `lhs` matrix"),
-    
-    op_div_mat = template_op_bin_mat(gen, "Div", "div", "/",
-        "Divides each component of the `lhs` matrix by the \
-        \n    /// corresponding component of the `rhs` matrix"),
-
-    op_mul_mat = template_mul_mat(gen),
-        
-    op_mul_vec = template_mul_vec(gen),
-    
-    op_add_scalar = template_op_bin_scalar(gen, "Add", "add", "+",
-        "Adds a scalar to each component of a matrix"),
-    
-    op_sub_scalar = template_op_bin_scalar(gen, "Sub", "sub", "-",
-        "Subtracts a scalar from each component of a matrix"),
-    
-    op_mul_scalar = template_op_bin_scalar(gen, "Mul", "mul", "*",
-        "Multiplies each component of a matrix by a scalar"),
-    
-    op_div_scalar = template_op_bin_scalar(gen, "Div", "div", "/",
-        "Divides each component of a {doc_name} by a scalar"),
-    
-    op_neg = template_op_unary(gen, "Neg", "neg", "-", "negation"),
+    /// Index notation for mutating matrix columns.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// #[macro_use] extern crate vexyz_math;
+    /// use vexyz_math::*;
+    ///
+    /// # fn main() {{
+    /// let mut a = {macro_builder}!(
+    ///     {example_args},
+    /// );
+    /// {mutation}
+    ///
+    /// let b = {macro_builder}!(
+    ///     {example_res},
+    /// );
+    /// assert_eq!(a, b);
+    /// # }}
+    /// ```
+    ///
+    /// # Panics
+    ///
+    /// Will panic if the index is greater than {max_index}.
+    #[inline(always)] fn index_mut<'a>(&'a mut self, i: usize) -> &'a mut {col_tpe} {{
+        &mut self.cols[i]
+    }}
+}}",
+    macro_builder = gen.macro_builder_name,
+    struct_name = gen.struct_name,
+    max_index = gen.nr_cols - 1,
+    col_tpe = gen.col_tpe,
+    example_args = (0..gen.nr_cols).map(|i| format!("{col_builder}!({col_body})",
+        col_builder = gen.col_builder, col_body = gen.lhs_col(i))
+    ).concat(",\n    ///     "),
+    mutation = (0..gen.nr_cols).map(|i| format!("a[{index}] = {col_builder}!({col_body})",
+        index = i, col_builder = gen.col_builder, col_body = gen.rhs_col(i))
+    ).mk_string("", ";\n    /// ", ";"),
+    example_res = (0..gen.nr_cols).map(|i| format!("{col_builder}!({col_body})",
+        col_builder = gen.col_builder, col_body = gen.rhs_col(i))
+    ).concat(",\n    ///     "),
 }}
 
 fn template_op_bin_mat(

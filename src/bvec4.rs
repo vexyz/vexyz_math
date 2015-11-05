@@ -57,7 +57,7 @@ impl Vec4b {
     /// # }
     /// ```
     pub fn all(&self) -> bool {
-        self[0] && self[1] && self[2] && self[3]
+        self.x() && self.y() && self.z() && self.w()
     }
     
     /// Returns true if at least one of the vector components is true, false otherwise.
@@ -74,7 +74,7 @@ impl Vec4b {
     /// # }
     /// ```
     pub fn any(&self) -> bool {
-        self[0] || self[1] || self[2] || self[3]
+        self.x() || self.y() || self.z() || self.w()
     }
     
     /// Performs component-wise negation of the vector, returning a new vector.
@@ -91,7 +91,7 @@ impl Vec4b {
     /// # }
     /// ```
     pub fn not(&self) -> Vec4b {
-        Vec4b::new(!self[0], !self[1], !self[2], !self[3])
+        Vec4b::new(!self.x(), !self.y(), !self.z(), !self.w())
     }
 }
 
@@ -105,6 +105,9 @@ impl Index<usize> for Vec4b {
     type Output = bool;
     
     /// Index notation for acessing components of a vector.
+    ///
+    /// Caveat: due to language constraints, index-based accessors are slower than corresponding
+    /// method-based accessors for SIMD implementation.
     ///
     /// # Examples
     ///
@@ -126,6 +129,34 @@ impl Index<usize> for Vec4b {
     }
 }
 
+impl IndexMut<usize> for Vec4b {
+
+    /// Index notation for mutating components of a vector.
+    ///
+    /// Caveat: due to language constraints, index-based accessors are slower than corresponding
+    /// method-based accessors for SIMD implementation.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// #[macro_use] extern crate vexyz_math;
+    /// use vexyz_math::*;
+    ///
+    /// # fn main() {
+    /// let mut u = bvec4!(true, false, true, false);
+    /// u[0] = true; u[1] = true; u[2] = false; u[3] = true;
+    /// assert_eq!(u, bvec4!(true, true, false, true));
+    /// # }
+    /// ```
+    ///
+    /// # Panics
+    ///
+    /// Will panic if the index is greater than 3.
+    #[inline(always)] fn index_mut<'a>(&'a mut self, i: usize) -> &'a mut bool {
+        &mut self.data[i]
+    }
+}
+
 impl<'a, 'b> BitAnd<&'b Vec4b> for &'a Vec4b {
     type Output = Vec4b;
 
@@ -144,7 +175,7 @@ impl<'a, 'b> BitAnd<&'b Vec4b> for &'a Vec4b {
     /// # }
     /// ```
     fn bitand(self, rhs: &Vec4b) -> Vec4b {
-        Vec4b::new(self[0] & rhs[0], self[1] & rhs[1], self[2] & rhs[2], self[3] & rhs[3])
+        Vec4b::new(self.x() & rhs.x(), self.y() & rhs.y(), self.z() & rhs.z(), self.w() & rhs.w())
     }
 }
 
@@ -193,7 +224,7 @@ impl<'a> BitAnd<bool> for &'a Vec4b {
     /// # }
     /// ```
     fn bitand(self, rhs: bool) -> Vec4b {
-        Vec4b::new(self[0] & rhs, self[1] & rhs, self[2] & rhs, self[3] & rhs)
+        Vec4b::new(self.x() & rhs, self.y() & rhs, self.z() & rhs, self.w() & rhs)
     }
 }
 
@@ -224,7 +255,7 @@ impl<'a, 'b> BitOr<&'b Vec4b> for &'a Vec4b {
     /// # }
     /// ```
     fn bitor(self, rhs: &Vec4b) -> Vec4b {
-        Vec4b::new(self[0] | rhs[0], self[1] | rhs[1], self[2] | rhs[2], self[3] | rhs[3])
+        Vec4b::new(self.x() | rhs.x(), self.y() | rhs.y(), self.z() | rhs.z(), self.w() | rhs.w())
     }
 }
 
@@ -273,7 +304,7 @@ impl<'a> BitOr<bool> for &'a Vec4b {
     /// # }
     /// ```
     fn bitor(self, rhs: bool) -> Vec4b {
-        Vec4b::new(self[0] | rhs, self[1] | rhs, self[2] | rhs, self[3] | rhs)
+        Vec4b::new(self.x() | rhs, self.y() | rhs, self.z() | rhs, self.w() | rhs)
     }
 }
 
@@ -304,7 +335,7 @@ impl<'a, 'b> BitXor<&'b Vec4b> for &'a Vec4b {
     /// # }
     /// ```
     fn bitxor(self, rhs: &Vec4b) -> Vec4b {
-        Vec4b::new(self[0] ^ rhs[0], self[1] ^ rhs[1], self[2] ^ rhs[2], self[3] ^ rhs[3])
+        Vec4b::new(self.x() ^ rhs.x(), self.y() ^ rhs.y(), self.z() ^ rhs.z(), self.w() ^ rhs.w())
     }
 }
 
@@ -353,7 +384,7 @@ impl<'a> BitXor<bool> for &'a Vec4b {
     /// # }
     /// ```
     fn bitxor(self, rhs: bool) -> Vec4b {
-        Vec4b::new(self[0] ^ rhs, self[1] ^ rhs, self[2] ^ rhs, self[3] ^ rhs)
+        Vec4b::new(self.x() ^ rhs, self.y() ^ rhs, self.z() ^ rhs, self.w() ^ rhs)
     }
 }
 
@@ -383,7 +414,7 @@ impl<'a> Not for &'a Vec4b {
     /// # }
     /// ```
     fn not(self) -> Vec4b {
-        Vec4b::new(!self[0], !self[1], !self[2], !self[3])
+        Vec4b::new(!self.x(), !self.y(), !self.z(), !self.w())
     }
 }
 

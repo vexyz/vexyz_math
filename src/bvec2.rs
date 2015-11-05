@@ -45,7 +45,7 @@ impl Vec2b {
     /// # }
     /// ```
     pub fn all(&self) -> bool {
-        self[0] && self[1]
+        self.x() && self.y()
     }
     
     /// Returns true if at least one of the vector components is true, false otherwise.
@@ -62,7 +62,7 @@ impl Vec2b {
     /// # }
     /// ```
     pub fn any(&self) -> bool {
-        self[0] || self[1]
+        self.x() || self.y()
     }
     
     /// Performs component-wise negation of the vector, returning a new vector.
@@ -79,7 +79,7 @@ impl Vec2b {
     /// # }
     /// ```
     pub fn not(&self) -> Vec2b {
-        Vec2b::new(!self[0], !self[1])
+        Vec2b::new(!self.x(), !self.y())
     }
 }
 
@@ -93,6 +93,9 @@ impl Index<usize> for Vec2b {
     type Output = bool;
     
     /// Index notation for acessing components of a vector.
+    ///
+    /// Caveat: due to language constraints, index-based accessors are slower than corresponding
+    /// method-based accessors for SIMD implementation.
     ///
     /// # Examples
     ///
@@ -114,6 +117,34 @@ impl Index<usize> for Vec2b {
     }
 }
 
+impl IndexMut<usize> for Vec2b {
+
+    /// Index notation for mutating components of a vector.
+    ///
+    /// Caveat: due to language constraints, index-based accessors are slower than corresponding
+    /// method-based accessors for SIMD implementation.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// #[macro_use] extern crate vexyz_math;
+    /// use vexyz_math::*;
+    ///
+    /// # fn main() {
+    /// let mut u = bvec2!(true, false);
+    /// u[0] = true; u[1] = true;
+    /// assert_eq!(u, bvec2!(true, true));
+    /// # }
+    /// ```
+    ///
+    /// # Panics
+    ///
+    /// Will panic if the index is greater than 1.
+    #[inline(always)] fn index_mut<'a>(&'a mut self, i: usize) -> &'a mut bool {
+        &mut self.data[i]
+    }
+}
+
 impl<'a, 'b> BitAnd<&'b Vec2b> for &'a Vec2b {
     type Output = Vec2b;
 
@@ -132,7 +163,7 @@ impl<'a, 'b> BitAnd<&'b Vec2b> for &'a Vec2b {
     /// # }
     /// ```
     fn bitand(self, rhs: &Vec2b) -> Vec2b {
-        Vec2b::new(self[0] & rhs[0], self[1] & rhs[1])
+        Vec2b::new(self.x() & rhs.x(), self.y() & rhs.y())
     }
 }
 
@@ -181,7 +212,7 @@ impl<'a> BitAnd<bool> for &'a Vec2b {
     /// # }
     /// ```
     fn bitand(self, rhs: bool) -> Vec2b {
-        Vec2b::new(self[0] & rhs, self[1] & rhs)
+        Vec2b::new(self.x() & rhs, self.y() & rhs)
     }
 }
 
@@ -212,7 +243,7 @@ impl<'a, 'b> BitOr<&'b Vec2b> for &'a Vec2b {
     /// # }
     /// ```
     fn bitor(self, rhs: &Vec2b) -> Vec2b {
-        Vec2b::new(self[0] | rhs[0], self[1] | rhs[1])
+        Vec2b::new(self.x() | rhs.x(), self.y() | rhs.y())
     }
 }
 
@@ -261,7 +292,7 @@ impl<'a> BitOr<bool> for &'a Vec2b {
     /// # }
     /// ```
     fn bitor(self, rhs: bool) -> Vec2b {
-        Vec2b::new(self[0] | rhs, self[1] | rhs)
+        Vec2b::new(self.x() | rhs, self.y() | rhs)
     }
 }
 
@@ -292,7 +323,7 @@ impl<'a, 'b> BitXor<&'b Vec2b> for &'a Vec2b {
     /// # }
     /// ```
     fn bitxor(self, rhs: &Vec2b) -> Vec2b {
-        Vec2b::new(self[0] ^ rhs[0], self[1] ^ rhs[1])
+        Vec2b::new(self.x() ^ rhs.x(), self.y() ^ rhs.y())
     }
 }
 
@@ -341,7 +372,7 @@ impl<'a> BitXor<bool> for &'a Vec2b {
     /// # }
     /// ```
     fn bitxor(self, rhs: bool) -> Vec2b {
-        Vec2b::new(self[0] ^ rhs, self[1] ^ rhs)
+        Vec2b::new(self.x() ^ rhs, self.y() ^ rhs)
     }
 }
 
@@ -371,7 +402,7 @@ impl<'a> Not for &'a Vec2b {
     /// # }
     /// ```
     fn not(self) -> Vec2b {
-        Vec2b::new(!self[0], !self[1])
+        Vec2b::new(!self.x(), !self.y())
     }
 }
 

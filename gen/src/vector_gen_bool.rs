@@ -9,7 +9,7 @@ pub fn gen_bool_vector(n: usize) -> String {
         tpe: Type::Bool,
         dims: n,
         macro_builder_name: format!("bvec{}", n),
-        all_ordinals: &vec_common::XYZW,
+        all_ordinals: &XYZW,
         doc_name: "vector".to_string(),
         val_name: "u".to_string(),
         quaternion_override: false,
@@ -29,6 +29,8 @@ fn template_file(gen: &VecGen) -> String { format! {"\
 
 {op_index}
 
+{op_index_mut}
+
 {template_boolean_ops}
 
 {macro_builder}
@@ -38,6 +40,7 @@ fn template_file(gen: &VecGen) -> String { format! {"\
     template_struct_impl = vec_common::template_struct_impl(gen, template_bool_postfix(gen)),
     trait_display = vec_common::trait_display(gen),
     op_index = vec_common::op_index(gen),
+    op_index_mut = vec_common::op_index_mut(gen),
     template_boolean_ops = template_boolean_ops(gen),
     macro_builder = vec_common::macro_builder(gen),
 }}

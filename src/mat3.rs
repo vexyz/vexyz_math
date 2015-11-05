@@ -26,29 +26,29 @@ impl Mat3 {
     ///
     /// # fn main() {
     /// let a = mat3!(
-    ///     0.1, 0.2, 0.3,
-    ///     1.1, 1.2, 1.3,
-    ///     2.1, 2.2, 2.3,
+    ///     11.0, 12.0, 13.0,
+    ///     21.0, 22.0, 23.0,
+    ///     31.0, 32.0, 33.0,
     /// );
     /// let b = mat3!(
-    ///     0.1, 1.1, 2.1,
-    ///     0.2, 1.2, 2.2,
-    ///     0.3, 1.3, 2.3,
+    ///     11.0, 21.0, 31.0,
+    ///     12.0, 22.0, 32.0,
+    ///     13.0, 23.0, 33.0,
     /// );
     /// assert_eq!(a.transpose(), b);
     /// # }
     /// ```
     pub fn transpose(&self) -> Mat3 {
         Mat3::new(
-            Vec3::new(self[0][0], self[1][0], self[2][0]),
-            Vec3::new(self[0][1], self[1][1], self[2][1]),
-            Vec3::new(self[0][2], self[1][2], self[2][2]),
+            Vec3::new(self[0].x(), self[1].x(), self[2].x()),
+            Vec3::new(self[0].y(), self[1].y(), self[2].y()),
+            Vec3::new(self[0].z(), self[1].z(), self[2].z()),
         )
     }
 }
 
 pub trait Mat3Mat3Ops<Rhs> {
-    fn lerp(&self, rhs: Rhs, a: f64) -> Mat3;
+    fn lerp(&self, rhs: Rhs, a: f32) -> Mat3;
 }
 
 impl<'a> Mat3Mat3Ops<&'a Mat3> for Mat3 {
@@ -62,20 +62,20 @@ impl<'a> Mat3Mat3Ops<&'a Mat3> for Mat3 {
     ///
     /// # fn main() {
     /// let a = mat3!(
-    ///     0.1, 0.2, 0.3,
-    ///     1.1, 1.2, 1.3,
-    ///     2.1, 2.2, 2.3,
+    ///     11.0, 12.0, 13.0,
+    ///     21.0, 22.0, 23.0,
+    ///     31.0, 32.0, 33.0,
     /// );
     /// let b = mat3!(
-    ///     0.5, 0.6, 0.7,
-    ///     1.5, 1.6, 1.7,
-    ///     2.5, 2.6, 2.7,
+    ///     15.0, 16.0, 17.0,
+    ///     25.0, 26.0, 27.0,
+    ///     35.0, 36.0, 37.0,
     /// );
     /// let c = a*(1.0 - 0.25) + b*0.25;
     /// assert_eq!(a.lerp(b, 0.25), c);
     /// # }
     /// ```
-    fn lerp(&self, rhs: &Mat3, a: f64) -> Mat3 {
+    fn lerp(&self, rhs: &Mat3, a: f32) -> Mat3 {
         let b = 1.0 - a;
         Mat3::new(
             self[0]*b + rhs[0]*a, self[1]*b + rhs[1]*a, self[2]*b + rhs[2]*a
@@ -85,7 +85,7 @@ impl<'a> Mat3Mat3Ops<&'a Mat3> for Mat3 {
 
 impl Mat3Mat3Ops<Mat3> for Mat3 {
     /// Shorthand for `lhs.determinant(&rhs)`.
-    #[inline(always)] fn lerp(&self, rhs: Mat3, a: f64) -> Mat3 {
+    #[inline(always)] fn lerp(&self, rhs: Mat3, a: f32) -> Mat3 {
         self.lerp(&rhs, a)
     }
 }
@@ -109,9 +109,9 @@ impl Index<usize> for Mat3 {
     ///
     /// # fn main() {
     /// let m = mat3!(
-    ///     vec3!(0.1, 0.2, 0.3),
-    ///     vec3!(1.1, 1.2, 1.3),
-    ///     vec3!(2.1, 2.2, 2.3),
+    ///     vec3!(11.0, 12.0, 13.0),
+    ///     vec3!(21.0, 22.0, 23.0),
+    ///     vec3!(31.0, 32.0, 33.0),
     /// );
     /// assert_eq!(m, mat3!(m[0], m[1], m[2]));
     /// # }
@@ -122,6 +122,43 @@ impl Index<usize> for Mat3 {
     /// Will panic if the index is greater than 2.
     #[inline(always)] fn index<'a>(&'a self, i: usize) -> &'a Vec3 {
         &self.cols[i]
+    }
+}
+
+impl IndexMut<usize> for Mat3 {
+    
+    /// Index notation for mutating matrix columns.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// #[macro_use] extern crate vexyz_math;
+    /// use vexyz_math::*;
+    ///
+    /// # fn main() {
+    /// let mut a = mat3!(
+    ///     vec3!(11.0, 12.0, 13.0),
+    ///     vec3!(21.0, 22.0, 23.0),
+    ///     vec3!(31.0, 32.0, 33.0),
+    /// );
+    /// a[0] = vec3!(15.0, 16.0, 17.0);
+    /// a[1] = vec3!(25.0, 26.0, 27.0);
+    /// a[2] = vec3!(35.0, 36.0, 37.0);
+    ///
+    /// let b = mat3!(
+    ///     vec3!(15.0, 16.0, 17.0),
+    ///     vec3!(25.0, 26.0, 27.0),
+    ///     vec3!(35.0, 36.0, 37.0),
+    /// );
+    /// assert_eq!(a, b);
+    /// # }
+    /// ```
+    ///
+    /// # Panics
+    ///
+    /// Will panic if the index is greater than 2.
+    #[inline(always)] fn index_mut<'a>(&'a mut self, i: usize) -> &'a mut Vec3 {
+        &mut self.cols[i]
     }
 }
 
@@ -138,19 +175,19 @@ impl<'a, 'b> Add<&'b Mat3> for &'a Mat3 {
     ///
     /// # fn main() {
     /// let a = mat3!(
-    ///     0.1, 0.2, 0.3,
-    ///     1.1, 1.2, 1.3,
-    ///     2.1, 2.2, 2.3,
+    ///     11.0, 12.0, 13.0,
+    ///     21.0, 22.0, 23.0,
+    ///     31.0, 32.0, 33.0,
     /// );
     /// let b = mat3!(
-    ///     0.5, 0.6, 0.7,
-    ///     1.5, 1.6, 1.7,
-    ///     2.5, 2.6, 2.7,
+    ///     15.0, 16.0, 17.0,
+    ///     25.0, 26.0, 27.0,
+    ///     35.0, 36.0, 37.0,
     /// );
     /// let c = mat3!(
-    ///     0.1 + 0.5, 0.2 + 0.6, 0.3 + 0.7,
-    ///     1.1 + 1.5, 1.2 + 1.6, 1.3 + 1.7,
-    ///     2.1 + 2.5, 2.2 + 2.6, 2.3 + 2.7,
+    ///     11.0 + 15.0, 12.0 + 16.0, 13.0 + 17.0,
+    ///     21.0 + 25.0, 22.0 + 26.0, 23.0 + 27.0,
+    ///     31.0 + 35.0, 32.0 + 36.0, 33.0 + 37.0,
     /// );
     /// assert_eq!(a + b, c);
     /// # }
@@ -189,7 +226,7 @@ impl Add<Mat3> for Mat3 {
     }
 }
 
-impl<'a> Add<f64> for &'a Mat3 {
+impl<'a> Add<f32> for &'a Mat3 {
     type Output = Mat3;
     
     /// Adds a scalar to each component of a matrix producing a new matrix.
@@ -202,29 +239,29 @@ impl<'a> Add<f64> for &'a Mat3 {
     ///
     /// # fn main() {
     /// let a = mat3!(
-    ///     0.1, 0.2, 0.3,
-    ///     1.1, 1.2, 1.3,
-    ///     2.1, 2.2, 2.3,
+    ///     11.0, 12.0, 13.0,
+    ///     21.0, 22.0, 23.0,
+    ///     31.0, 32.0, 33.0,
     /// );
     /// let b = 2.0;
     /// let c = mat3!(
-    ///     0.1 + 2.0, 0.2 + 2.0, 0.3 + 2.0,
-    ///     1.1 + 2.0, 1.2 + 2.0, 1.3 + 2.0,
-    ///     2.1 + 2.0, 2.2 + 2.0, 2.3 + 2.0,
+    ///     11.0 + 2.0, 12.0 + 2.0, 13.0 + 2.0,
+    ///     21.0 + 2.0, 22.0 + 2.0, 23.0 + 2.0,
+    ///     31.0 + 2.0, 32.0 + 2.0, 33.0 + 2.0,
     /// );
     /// assert_eq!(a + b, c);
     /// # }
     /// ```
-    fn add(self, rhs: f64) -> Mat3 {
+    fn add(self, rhs: f32) -> Mat3 {
         Mat3::new(self[0] + rhs, self[1] + rhs, self[2] + rhs)
     }
 }
 
-impl Add<f64> for Mat3 {
+impl Add<f32> for Mat3 {
     type Output = Mat3;
     
     /// Shorthand for `&lhs + rhs`.
-    #[inline(always)] fn add(self, rhs: f64) -> Mat3 {
+    #[inline(always)] fn add(self, rhs: f32) -> Mat3 {
         &self + rhs
     }
 }
@@ -243,19 +280,19 @@ impl<'a, 'b> Sub<&'b Mat3> for &'a Mat3 {
     ///
     /// # fn main() {
     /// let a = mat3!(
-    ///     0.1, 0.2, 0.3,
-    ///     1.1, 1.2, 1.3,
-    ///     2.1, 2.2, 2.3,
+    ///     11.0, 12.0, 13.0,
+    ///     21.0, 22.0, 23.0,
+    ///     31.0, 32.0, 33.0,
     /// );
     /// let b = mat3!(
-    ///     0.5, 0.6, 0.7,
-    ///     1.5, 1.6, 1.7,
-    ///     2.5, 2.6, 2.7,
+    ///     15.0, 16.0, 17.0,
+    ///     25.0, 26.0, 27.0,
+    ///     35.0, 36.0, 37.0,
     /// );
     /// let c = mat3!(
-    ///     0.1 - 0.5, 0.2 - 0.6, 0.3 - 0.7,
-    ///     1.1 - 1.5, 1.2 - 1.6, 1.3 - 1.7,
-    ///     2.1 - 2.5, 2.2 - 2.6, 2.3 - 2.7,
+    ///     11.0 - 15.0, 12.0 - 16.0, 13.0 - 17.0,
+    ///     21.0 - 25.0, 22.0 - 26.0, 23.0 - 27.0,
+    ///     31.0 - 35.0, 32.0 - 36.0, 33.0 - 37.0,
     /// );
     /// assert_eq!(a - b, c);
     /// # }
@@ -294,7 +331,7 @@ impl Sub<Mat3> for Mat3 {
     }
 }
 
-impl<'a> Sub<f64> for &'a Mat3 {
+impl<'a> Sub<f32> for &'a Mat3 {
     type Output = Mat3;
     
     /// Subtracts a scalar from each component of a matrix producing a new matrix.
@@ -307,29 +344,29 @@ impl<'a> Sub<f64> for &'a Mat3 {
     ///
     /// # fn main() {
     /// let a = mat3!(
-    ///     0.1, 0.2, 0.3,
-    ///     1.1, 1.2, 1.3,
-    ///     2.1, 2.2, 2.3,
+    ///     11.0, 12.0, 13.0,
+    ///     21.0, 22.0, 23.0,
+    ///     31.0, 32.0, 33.0,
     /// );
     /// let b = 2.0;
     /// let c = mat3!(
-    ///     0.1 - 2.0, 0.2 - 2.0, 0.3 - 2.0,
-    ///     1.1 - 2.0, 1.2 - 2.0, 1.3 - 2.0,
-    ///     2.1 - 2.0, 2.2 - 2.0, 2.3 - 2.0,
+    ///     11.0 - 2.0, 12.0 - 2.0, 13.0 - 2.0,
+    ///     21.0 - 2.0, 22.0 - 2.0, 23.0 - 2.0,
+    ///     31.0 - 2.0, 32.0 - 2.0, 33.0 - 2.0,
     /// );
     /// assert_eq!(a - b, c);
     /// # }
     /// ```
-    fn sub(self, rhs: f64) -> Mat3 {
+    fn sub(self, rhs: f32) -> Mat3 {
         Mat3::new(self[0] - rhs, self[1] - rhs, self[2] - rhs)
     }
 }
 
-impl Sub<f64> for Mat3 {
+impl Sub<f32> for Mat3 {
     type Output = Mat3;
     
     /// Shorthand for `&lhs - rhs`.
-    #[inline(always)] fn sub(self, rhs: f64) -> Mat3 {
+    #[inline(always)] fn sub(self, rhs: f32) -> Mat3 {
         &self - rhs
     }
 }
@@ -347,27 +384,27 @@ impl<'a, 'b> Mul<&'b Mat3> for &'a Mat3 {
     ///
     /// # fn main() {
     /// let a = mat3!(
-    ///     0.1, 0.2, 0.3,
-    ///     1.1, 1.2, 1.3,
-    ///     2.1, 2.2, 2.3,
+    ///     11.0, 12.0, 13.0,
+    ///     21.0, 22.0, 23.0,
+    ///     31.0, 32.0, 33.0,
     /// );
     /// let b = mat3!(
-    ///     0.5, 0.6, 0.7,
-    ///     1.5, 1.6, 1.7,
-    ///     2.5, 2.6, 2.7,
+    ///     15.0, 16.0, 17.0,
+    ///     25.0, 26.0, 27.0,
+    ///     35.0, 36.0, 37.0,
     /// );
     /// let c = mat3!(
-    ///     0.1*0.5 + 1.1*0.6 + 2.1*0.7,
-    ///     0.2*0.5 + 1.2*0.6 + 2.2*0.7,
-    ///     0.3*0.5 + 1.3*0.6 + 2.3*0.7,
+    ///     11.0*15.0 + 21.0*16.0 + 31.0*17.0,
+    ///     12.0*15.0 + 22.0*16.0 + 32.0*17.0,
+    ///     13.0*15.0 + 23.0*16.0 + 33.0*17.0,
     ///
-    ///     0.1*1.5 + 1.1*1.6 + 2.1*1.7,
-    ///     0.2*1.5 + 1.2*1.6 + 2.2*1.7,
-    ///     0.3*1.5 + 1.3*1.6 + 2.3*1.7,
+    ///     11.0*25.0 + 21.0*26.0 + 31.0*27.0,
+    ///     12.0*25.0 + 22.0*26.0 + 32.0*27.0,
+    ///     13.0*25.0 + 23.0*26.0 + 33.0*27.0,
     ///
-    ///     0.1*2.5 + 1.1*2.6 + 2.1*2.7,
-    ///     0.2*2.5 + 1.2*2.6 + 2.2*2.7,
-    ///     0.3*2.5 + 1.3*2.6 + 2.3*2.7,
+    ///     11.0*35.0 + 21.0*36.0 + 31.0*37.0,
+    ///     12.0*35.0 + 22.0*36.0 + 32.0*37.0,
+    ///     13.0*35.0 + 23.0*36.0 + 33.0*37.0,
     /// );
     /// assert_eq!(a * b, c);
     /// # }
@@ -422,15 +459,15 @@ impl<'a, 'b> Mul<&'b Vec3> for &'a Mat3 {
     ///
     /// # fn main() {
     /// let a = mat3!(
-    ///     0.1, 0.2, 0.3,
-    ///     1.1, 1.2, 1.3,
-    ///     2.1, 2.2, 2.3,
+    ///     11.0, 12.0, 13.0,
+    ///     21.0, 22.0, 23.0,
+    ///     31.0, 32.0, 33.0,
     /// );
-    /// let u = vec3!(0.5, 0.6, 0.7);
+    /// let u = vec3!(15.0, 16.0, 17.0);
     /// let v = vec3!(
-    ///     0.1*0.5 + 1.1*0.6 + 2.1*0.7,
-    ///     0.2*0.5 + 1.2*0.6 + 2.2*0.7,
-    ///     0.3*0.5 + 1.3*0.6 + 2.3*0.7,
+    ///     11.0*15.0 + 21.0*16.0 + 31.0*17.0,
+    ///     12.0*15.0 + 22.0*16.0 + 32.0*17.0,
+    ///     13.0*15.0 + 23.0*16.0 + 33.0*17.0,
     /// );
     /// assert_eq!(a * u, v);
     /// # }
@@ -470,7 +507,7 @@ impl Mul<Vec3> for Mat3 {
     }
 }
 
-impl<'a> Mul<f64> for &'a Mat3 {
+impl<'a> Mul<f32> for &'a Mat3 {
     type Output = Mat3;
     
     /// Multiplies each component of a matrix by a scalar producing a new matrix.
@@ -483,29 +520,29 @@ impl<'a> Mul<f64> for &'a Mat3 {
     ///
     /// # fn main() {
     /// let a = mat3!(
-    ///     0.1, 0.2, 0.3,
-    ///     1.1, 1.2, 1.3,
-    ///     2.1, 2.2, 2.3,
+    ///     11.0, 12.0, 13.0,
+    ///     21.0, 22.0, 23.0,
+    ///     31.0, 32.0, 33.0,
     /// );
     /// let b = 2.0;
     /// let c = mat3!(
-    ///     0.1 * 2.0, 0.2 * 2.0, 0.3 * 2.0,
-    ///     1.1 * 2.0, 1.2 * 2.0, 1.3 * 2.0,
-    ///     2.1 * 2.0, 2.2 * 2.0, 2.3 * 2.0,
+    ///     11.0 * 2.0, 12.0 * 2.0, 13.0 * 2.0,
+    ///     21.0 * 2.0, 22.0 * 2.0, 23.0 * 2.0,
+    ///     31.0 * 2.0, 32.0 * 2.0, 33.0 * 2.0,
     /// );
     /// assert_eq!(a * b, c);
     /// # }
     /// ```
-    fn mul(self, rhs: f64) -> Mat3 {
+    fn mul(self, rhs: f32) -> Mat3 {
         Mat3::new(self[0] * rhs, self[1] * rhs, self[2] * rhs)
     }
 }
 
-impl Mul<f64> for Mat3 {
+impl Mul<f32> for Mat3 {
     type Output = Mat3;
     
     /// Shorthand for `&lhs * rhs`.
-    #[inline(always)] fn mul(self, rhs: f64) -> Mat3 {
+    #[inline(always)] fn mul(self, rhs: f32) -> Mat3 {
         &self * rhs
     }
 }
@@ -524,19 +561,19 @@ impl<'a, 'b> Div<&'b Mat3> for &'a Mat3 {
     ///
     /// # fn main() {
     /// let a = mat3!(
-    ///     0.1, 0.2, 0.3,
-    ///     1.1, 1.2, 1.3,
-    ///     2.1, 2.2, 2.3,
+    ///     11.0, 12.0, 13.0,
+    ///     21.0, 22.0, 23.0,
+    ///     31.0, 32.0, 33.0,
     /// );
     /// let b = mat3!(
-    ///     0.5, 0.6, 0.7,
-    ///     1.5, 1.6, 1.7,
-    ///     2.5, 2.6, 2.7,
+    ///     15.0, 16.0, 17.0,
+    ///     25.0, 26.0, 27.0,
+    ///     35.0, 36.0, 37.0,
     /// );
     /// let c = mat3!(
-    ///     0.1 / 0.5, 0.2 / 0.6, 0.3 / 0.7,
-    ///     1.1 / 1.5, 1.2 / 1.6, 1.3 / 1.7,
-    ///     2.1 / 2.5, 2.2 / 2.6, 2.3 / 2.7,
+    ///     11.0 / 15.0, 12.0 / 16.0, 13.0 / 17.0,
+    ///     21.0 / 25.0, 22.0 / 26.0, 23.0 / 27.0,
+    ///     31.0 / 35.0, 32.0 / 36.0, 33.0 / 37.0,
     /// );
     /// assert_eq!(a / b, c);
     /// # }
@@ -575,7 +612,7 @@ impl Div<Mat3> for Mat3 {
     }
 }
 
-impl<'a> Div<f64> for &'a Mat3 {
+impl<'a> Div<f32> for &'a Mat3 {
     type Output = Mat3;
     
     /// Divides each component of a {doc_name} by a scalar producing a new matrix.
@@ -588,29 +625,29 @@ impl<'a> Div<f64> for &'a Mat3 {
     ///
     /// # fn main() {
     /// let a = mat3!(
-    ///     0.1, 0.2, 0.3,
-    ///     1.1, 1.2, 1.3,
-    ///     2.1, 2.2, 2.3,
+    ///     11.0, 12.0, 13.0,
+    ///     21.0, 22.0, 23.0,
+    ///     31.0, 32.0, 33.0,
     /// );
     /// let b = 2.0;
     /// let c = mat3!(
-    ///     0.1 / 2.0, 0.2 / 2.0, 0.3 / 2.0,
-    ///     1.1 / 2.0, 1.2 / 2.0, 1.3 / 2.0,
-    ///     2.1 / 2.0, 2.2 / 2.0, 2.3 / 2.0,
+    ///     11.0 / 2.0, 12.0 / 2.0, 13.0 / 2.0,
+    ///     21.0 / 2.0, 22.0 / 2.0, 23.0 / 2.0,
+    ///     31.0 / 2.0, 32.0 / 2.0, 33.0 / 2.0,
     /// );
     /// assert_eq!(a / b, c);
     /// # }
     /// ```
-    fn div(self, rhs: f64) -> Mat3 {
+    fn div(self, rhs: f32) -> Mat3 {
         Mat3::new(self[0] / rhs, self[1] / rhs, self[2] / rhs)
     }
 }
 
-impl Div<f64> for Mat3 {
+impl Div<f32> for Mat3 {
     type Output = Mat3;
     
     /// Shorthand for `&lhs / rhs`.
-    #[inline(always)] fn div(self, rhs: f64) -> Mat3 {
+    #[inline(always)] fn div(self, rhs: f32) -> Mat3 {
         &self / rhs
     }
 }
@@ -628,14 +665,14 @@ impl<'a> Neg for &'a Mat3 {
     ///
     /// # fn main() {
     /// let a = -mat3!(
-    ///     0.1, 0.2, 0.3,
-    ///     1.1, 1.2, 1.3,
-    ///     2.1, 2.2, 2.3,
+    ///     11.0, 12.0, 13.0,
+    ///     21.0, 22.0, 23.0,
+    ///     31.0, 32.0, 33.0,
     /// );
     /// let b = mat3!(
-    ///     -0.1, -0.2, -0.3,
-    ///     -1.1, -1.2, -1.3,
-    ///     -2.1, -2.2, -2.3,
+    ///     -11.0, -12.0, -13.0,
+    ///     -21.0, -22.0, -23.0,
+    ///     -31.0, -32.0, -33.0,
     /// );
     /// assert_eq!(a, b);
     /// # }
@@ -658,27 +695,27 @@ impl Neg for Mat3 {
 ///
 /// # Examples
 ///
-/// Create a new column major matrix with `0.5` on diagonal:
+/// Create a new column major matrix with `15.0` on diagonal:
 ///
 /// ```
 /// #[macro_use] extern crate vexyz_math;
 /// use vexyz_math::*;
 ///
 /// # fn main() {
-/// let a = mat3!(0.5);
+/// let a = mat3!(15.0);
 /// let b = Mat3::new(
-///     vec3!(0.5, 0.0, 0.0),
-///     vec3!(0.0, 0.5, 0.0),
-///     vec3!(0.0, 0.0, 0.5),
+///     vec3!(15.0, 0.0, 0.0),
+///     vec3!(0.0, 15.0, 0.0),
+///     vec3!(0.0, 0.0, 15.0),
 /// );
 /// assert_eq!(a, b);
 /// # }
 /// ```
 ///
 /// Create a new column major matrix with
-///     `column0 = vec3(0.5, 0.6, 0.7)`,
-///     `column1 = vec3(1.5, 1.6, 1.7)`,
-///     `column2 = vec3(2.5, 2.6, 2.7)`:
+///     `column0 = vec3(15.0, 16.0, 17.0)`,
+///     `column1 = vec3(25.0, 26.0, 27.0)`,
+///     `column2 = vec3(35.0, 36.0, 37.0)`:
 ///
 /// ```
 /// #[macro_use] extern crate vexyz_math;
@@ -686,23 +723,23 @@ impl Neg for Mat3 {
 ///
 /// # fn main() {
 /// let a = mat3!(
-///     vec3!(0.5, 0.6, 0.7),
-///     vec3!(1.5, 1.6, 1.7),
-///     vec3!(2.5, 2.6, 2.7),
+///     vec3!(15.0, 16.0, 17.0),
+///     vec3!(25.0, 26.0, 27.0),
+///     vec3!(35.0, 36.0, 37.0),
 /// );
 /// let b = Mat3::new(
-///     vec3!(0.5, 0.6, 0.7),
-///     vec3!(1.5, 1.6, 1.7),
-///     vec3!(2.5, 2.6, 2.7),
+///     vec3!(15.0, 16.0, 17.0),
+///     vec3!(25.0, 26.0, 27.0),
+///     vec3!(35.0, 36.0, 37.0),
 /// );
 /// assert_eq!(a, b);
 /// # }
 /// ```
 ///
 /// Create a new column major matrix with
-///     `column0 = vec3(0.5, 0.6, 0.7)`,
-///     `column1 = vec3(1.5, 1.6, 1.7)`,
-///     `column2 = vec3(2.5, 2.6, 2.7)`:
+///     `column0 = vec3(15.0, 16.0, 17.0)`,
+///     `column1 = vec3(25.0, 26.0, 27.0)`,
+///     `column2 = vec3(35.0, 36.0, 37.0)`:
 ///
 /// ```
 /// #[macro_use] extern crate vexyz_math;
@@ -710,14 +747,14 @@ impl Neg for Mat3 {
 ///
 /// # fn main() {
 /// let a = mat3!(
-///     0.5, 0.6, 0.7,
-///     1.5, 1.6, 1.7,
-///     2.5, 2.6, 2.7,
+///     15.0, 16.0, 17.0,
+///     25.0, 26.0, 27.0,
+///     35.0, 36.0, 37.0,
 /// );
 /// let b = Mat3::new(
-///     vec3!(0.5, 0.6, 0.7),
-///     vec3!(1.5, 1.6, 1.7),
-///     vec3!(2.5, 2.6, 2.7),
+///     vec3!(15.0, 16.0, 17.0),
+///     vec3!(25.0, 26.0, 27.0),
+///     vec3!(35.0, 36.0, 37.0),
 /// );
 /// assert_eq!(a, b);
 /// # }
@@ -725,7 +762,7 @@ impl Neg for Mat3 {
 #[macro_export]
 macro_rules! mat3 {
     ($s:expr) => {{
-        let s = $s as f64;
+        let s = $s as f32;
         Mat3::new(
             vec3!(s, 0, 0),
             vec3!(0, s, 0),
@@ -742,18 +779,18 @@ macro_rules! mat3 {
      $m10:expr, $m11:expr, $m12:expr,
      $m20:expr, $m21:expr, $m22:expr) => {{
         Mat3::new(
-            vec3!($m00 as f64, $m01 as f64, $m02 as f64),
-            vec3!($m10 as f64, $m11 as f64, $m12 as f64),
-            vec3!($m20 as f64, $m21 as f64, $m22 as f64),
+            vec3!($m00 as f32, $m01 as f32, $m02 as f32),
+            vec3!($m10 as f32, $m11 as f32, $m12 as f32),
+            vec3!($m20 as f32, $m21 as f32, $m22 as f32),
         )
     }};
     ($m00:expr, $m01:expr, $m02:expr,
      $m10:expr, $m11:expr, $m12:expr,
      $m20:expr, $m21:expr, $m22:expr,) => {{
         Mat3::new(
-            vec3!($m00 as f64, $m01 as f64, $m02 as f64),
-            vec3!($m10 as f64, $m11 as f64, $m12 as f64),
-            vec3!($m20 as f64, $m21 as f64, $m22 as f64),
+            vec3!($m00 as f32, $m01 as f32, $m02 as f32),
+            vec3!($m10 as f32, $m11 as f32, $m12 as f32),
+            vec3!($m20 as f32, $m21 as f32, $m22 as f32),
         )
     }};
 }

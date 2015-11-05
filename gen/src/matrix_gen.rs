@@ -13,7 +13,7 @@ use std::ops::*;";
 pub fn gen_matrix(n: usize) -> String {
     let gen = &MatGen {
         struct_name: format!("Mat{}", n),
-        tpe: Type::F64,
+        tpe: Type::F32,
         col_tpe: format!("Vec{}", n),
         col_builder: format!("vec{}", n),
         nr_cols: n,

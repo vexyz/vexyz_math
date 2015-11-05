@@ -58,7 +58,7 @@ impl Vec4i {
     /// # }
     /// ```
     pub fn sum(&self) -> i32 {
-        self[0] + self[1] + self[2] + self[3]
+        self.x() + self.y() + self.z() + self.w()
     }
     
     /// Performs `abs()` on each component, producing a new vector.
@@ -75,7 +75,7 @@ impl Vec4i {
     /// # }
     /// ```
     pub fn abs(&self) -> Vec4i {
-        Vec4i::new(self[0].abs(), self[1].abs(), self[2].abs(), self[3].abs())
+        Vec4i::new(self.x().abs(), self.y().abs(), self.z().abs(), self.w().abs())
     }
 }
 
@@ -112,7 +112,7 @@ impl<'a> Vec4iOps<&'a Vec4i> for Vec4i {
     /// # }
     /// ```
     fn less_than(&self, rhs: &Vec4i) -> Vec4b {
-        Vec4b::new(self[0] < rhs[0], self[1] < rhs[1], self[2] < rhs[2], self[3] < rhs[3])
+        Vec4b::new(self.x() < rhs.x(), self.y() < rhs.y(), self.z() < rhs.z(), self.w() < rhs.w())
     }
 
     /// Performs component-wise numerical `less than or equal` comparision of two vectors,
@@ -131,7 +131,7 @@ impl<'a> Vec4iOps<&'a Vec4i> for Vec4i {
     /// # }
     /// ```
     fn less_than_equal(&self, rhs: &Vec4i) -> Vec4b {
-        Vec4b::new(self[0] <= rhs[0], self[1] <= rhs[1], self[2] <= rhs[2], self[3] <= rhs[3])
+        Vec4b::new(self.x() <= rhs.x(), self.y() <= rhs.y(), self.z() <= rhs.z(), self.w() <= rhs.w())
     }
 
     /// Performs component-wise numerical `greater than` comparision of two vectors,
@@ -150,7 +150,7 @@ impl<'a> Vec4iOps<&'a Vec4i> for Vec4i {
     /// # }
     /// ```
     fn greater_than(&self, rhs: &Vec4i) -> Vec4b {
-        Vec4b::new(self[0] > rhs[0], self[1] > rhs[1], self[2] > rhs[2], self[3] > rhs[3])
+        Vec4b::new(self.x() > rhs.x(), self.y() > rhs.y(), self.z() > rhs.z(), self.w() > rhs.w())
     }
 
     /// Performs component-wise numerical `greater than or equal` comparision of two vectors,
@@ -169,7 +169,7 @@ impl<'a> Vec4iOps<&'a Vec4i> for Vec4i {
     /// # }
     /// ```
     fn greater_than_equals(&self, rhs: &Vec4i) -> Vec4b {
-        Vec4b::new(self[0] >= rhs[0], self[1] >= rhs[1], self[2] >= rhs[2], self[3] >= rhs[3])
+        Vec4b::new(self.x() >= rhs.x(), self.y() >= rhs.y(), self.z() >= rhs.z(), self.w() >= rhs.w())
     }
 
     /// Performs component-wise numerical `equal` comparision of two vectors,
@@ -188,7 +188,7 @@ impl<'a> Vec4iOps<&'a Vec4i> for Vec4i {
     /// # }
     /// ```
     fn equal(&self, rhs: &Vec4i) -> Vec4b {
-        Vec4b::new(self[0] == rhs[0], self[1] == rhs[1], self[2] == rhs[2], self[3] == rhs[3])
+        Vec4b::new(self.x() == rhs.x(), self.y() == rhs.y(), self.z() == rhs.z(), self.w() == rhs.w())
     }
 
     /// Performs component-wise numerical `not equal` comparision of two vectors,
@@ -207,7 +207,7 @@ impl<'a> Vec4iOps<&'a Vec4i> for Vec4i {
     /// # }
     /// ```
     fn not_equal(&self, rhs: &Vec4i) -> Vec4b {
-        Vec4b::new(self[0] != rhs[0], self[1] != rhs[1], self[2] != rhs[2], self[3] != rhs[3])
+        Vec4b::new(self.x() != rhs.x(), self.y() != rhs.y(), self.z() != rhs.z(), self.w() != rhs.w())
     }
 
     /// Returns dot product of two vectors.
@@ -277,6 +277,9 @@ impl Index<usize> for Vec4i {
     
     /// Index notation for acessing components of a vector.
     ///
+    /// Caveat: due to language constraints, index-based accessors are slower than corresponding
+    /// method-based accessors for SIMD implementation.
+    ///
     /// # Examples
     ///
     /// ```
@@ -297,6 +300,34 @@ impl Index<usize> for Vec4i {
     }
 }
 
+impl IndexMut<usize> for Vec4i {
+
+    /// Index notation for mutating components of a vector.
+    ///
+    /// Caveat: due to language constraints, index-based accessors are slower than corresponding
+    /// method-based accessors for SIMD implementation.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// #[macro_use] extern crate vexyz_math;
+    /// use vexyz_math::*;
+    ///
+    /// # fn main() {
+    /// let mut u = ivec4!(20, 30, 40, 50);
+    /// u[0] = 2; u[1] = 3; u[2] = 4; u[3] = 5;
+    /// assert_eq!(u, ivec4!(2, 3, 4, 5));
+    /// # }
+    /// ```
+    ///
+    /// # Panics
+    ///
+    /// Will panic if the index is greater than 3.
+    #[inline(always)] fn index_mut<'a>(&'a mut self, i: usize) -> &'a mut i32 {
+        &mut self.data[i]
+    }
+}
+
 impl<'a, 'b> Add<&'b Vec4i> for &'a Vec4i {
     type Output = Vec4i;
 
@@ -314,7 +345,7 @@ impl<'a, 'b> Add<&'b Vec4i> for &'a Vec4i {
     /// # }
     /// ```
     fn add(self, rhs: &Vec4i) -> Vec4i {
-        Vec4i::new(self[0] + rhs[0], self[1] + rhs[1], self[2] + rhs[2], self[3] + rhs[3])
+        Vec4i::new(self.x() + rhs.x(), self.y() + rhs.y(), self.z() + rhs.z(), self.w() + rhs.w())
     }
 }
 
@@ -362,7 +393,7 @@ impl<'a> Add<i32> for &'a Vec4i {
     /// # }
     /// ```
     fn add(self, rhs: i32) -> Vec4i {
-        Vec4i::new(self[0] + rhs, self[1] + rhs, self[2] + rhs, self[3] + rhs)
+        Vec4i::new(self.x() + rhs, self.y() + rhs, self.z() + rhs, self.w() + rhs)
     }
 }
 
@@ -393,7 +424,7 @@ impl<'a, 'b> Sub<&'b Vec4i> for &'a Vec4i {
     /// # }
     /// ```
     fn sub(self, rhs: &Vec4i) -> Vec4i {
-        Vec4i::new(self[0] - rhs[0], self[1] - rhs[1], self[2] - rhs[2], self[3] - rhs[3])
+        Vec4i::new(self.x() - rhs.x(), self.y() - rhs.y(), self.z() - rhs.z(), self.w() - rhs.w())
     }
 }
 
@@ -441,7 +472,7 @@ impl<'a> Sub<i32> for &'a Vec4i {
     /// # }
     /// ```
     fn sub(self, rhs: i32) -> Vec4i {
-        Vec4i::new(self[0] - rhs, self[1] - rhs, self[2] - rhs, self[3] - rhs)
+        Vec4i::new(self.x() - rhs, self.y() - rhs, self.z() - rhs, self.w() - rhs)
     }
 }
 
@@ -471,7 +502,7 @@ impl<'a, 'b> Mul<&'b Vec4i> for &'a Vec4i {
     /// # }
     /// ```
     fn mul(self, rhs: &Vec4i) -> Vec4i {
-        Vec4i::new(self[0] * rhs[0], self[1] * rhs[1], self[2] * rhs[2], self[3] * rhs[3])
+        Vec4i::new(self.x() * rhs.x(), self.y() * rhs.y(), self.z() * rhs.z(), self.w() * rhs.w())
     }
 }
 
@@ -519,7 +550,7 @@ impl<'a> Mul<i32> for &'a Vec4i {
     /// # }
     /// ```
     fn mul(self, rhs: i32) -> Vec4i {
-        Vec4i::new(self[0] * rhs, self[1] * rhs, self[2] * rhs, self[3] * rhs)
+        Vec4i::new(self.x() * rhs, self.y() * rhs, self.z() * rhs, self.w() * rhs)
     }
 }
 
@@ -550,7 +581,7 @@ impl<'a, 'b> Div<&'b Vec4i> for &'a Vec4i {
     /// # }
     /// ```
     fn div(self, rhs: &Vec4i) -> Vec4i {
-        Vec4i::new(self[0] / rhs[0], self[1] / rhs[1], self[2] / rhs[2], self[3] / rhs[3])
+        Vec4i::new(self.x() / rhs.x(), self.y() / rhs.y(), self.z() / rhs.z(), self.w() / rhs.w())
     }
 }
 
@@ -598,7 +629,7 @@ impl<'a> Div<i32> for &'a Vec4i {
     /// # }
     /// ```
     fn div(self, rhs: i32) -> Vec4i {
-        Vec4i::new(self[0] / rhs, self[1] / rhs, self[2] / rhs, self[3] / rhs)
+        Vec4i::new(self.x() / rhs, self.y() / rhs, self.z() / rhs, self.w() / rhs)
     }
 }
 
@@ -628,7 +659,7 @@ impl<'a> Neg for &'a Vec4i {
     /// # }
     /// ```
     fn neg(self) -> Vec4i {
-        Vec4i::new(-self[0], -self[1], -self[2], -self[3])
+        Vec4i::new(-self.x(), -self.y(), -self.z(), -self.w())
     }
 }
 

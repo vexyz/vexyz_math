@@ -52,7 +52,7 @@ impl Vec3i {
     /// # }
     /// ```
     pub fn sum(&self) -> i32 {
-        self[0] + self[1] + self[2]
+        self.x() + self.y() + self.z()
     }
     
     /// Performs `abs()` on each component, producing a new vector.
@@ -69,7 +69,7 @@ impl Vec3i {
     /// # }
     /// ```
     pub fn abs(&self) -> Vec3i {
-        Vec3i::new(self[0].abs(), self[1].abs(), self[2].abs())
+        Vec3i::new(self.x().abs(), self.y().abs(), self.z().abs())
     }
 }
 
@@ -106,7 +106,7 @@ impl<'a> Vec3iOps<&'a Vec3i> for Vec3i {
     /// # }
     /// ```
     fn less_than(&self, rhs: &Vec3i) -> Vec3b {
-        Vec3b::new(self[0] < rhs[0], self[1] < rhs[1], self[2] < rhs[2])
+        Vec3b::new(self.x() < rhs.x(), self.y() < rhs.y(), self.z() < rhs.z())
     }
 
     /// Performs component-wise numerical `less than or equal` comparision of two vectors,
@@ -125,7 +125,7 @@ impl<'a> Vec3iOps<&'a Vec3i> for Vec3i {
     /// # }
     /// ```
     fn less_than_equal(&self, rhs: &Vec3i) -> Vec3b {
-        Vec3b::new(self[0] <= rhs[0], self[1] <= rhs[1], self[2] <= rhs[2])
+        Vec3b::new(self.x() <= rhs.x(), self.y() <= rhs.y(), self.z() <= rhs.z())
     }
 
     /// Performs component-wise numerical `greater than` comparision of two vectors,
@@ -144,7 +144,7 @@ impl<'a> Vec3iOps<&'a Vec3i> for Vec3i {
     /// # }
     /// ```
     fn greater_than(&self, rhs: &Vec3i) -> Vec3b {
-        Vec3b::new(self[0] > rhs[0], self[1] > rhs[1], self[2] > rhs[2])
+        Vec3b::new(self.x() > rhs.x(), self.y() > rhs.y(), self.z() > rhs.z())
     }
 
     /// Performs component-wise numerical `greater than or equal` comparision of two vectors,
@@ -163,7 +163,7 @@ impl<'a> Vec3iOps<&'a Vec3i> for Vec3i {
     /// # }
     /// ```
     fn greater_than_equals(&self, rhs: &Vec3i) -> Vec3b {
-        Vec3b::new(self[0] >= rhs[0], self[1] >= rhs[1], self[2] >= rhs[2])
+        Vec3b::new(self.x() >= rhs.x(), self.y() >= rhs.y(), self.z() >= rhs.z())
     }
 
     /// Performs component-wise numerical `equal` comparision of two vectors,
@@ -182,7 +182,7 @@ impl<'a> Vec3iOps<&'a Vec3i> for Vec3i {
     /// # }
     /// ```
     fn equal(&self, rhs: &Vec3i) -> Vec3b {
-        Vec3b::new(self[0] == rhs[0], self[1] == rhs[1], self[2] == rhs[2])
+        Vec3b::new(self.x() == rhs.x(), self.y() == rhs.y(), self.z() == rhs.z())
     }
 
     /// Performs component-wise numerical `not equal` comparision of two vectors,
@@ -201,7 +201,7 @@ impl<'a> Vec3iOps<&'a Vec3i> for Vec3i {
     /// # }
     /// ```
     fn not_equal(&self, rhs: &Vec3i) -> Vec3b {
-        Vec3b::new(self[0] != rhs[0], self[1] != rhs[1], self[2] != rhs[2])
+        Vec3b::new(self.x() != rhs.x(), self.y() != rhs.y(), self.z() != rhs.z())
     }
 
     /// Returns dot product of two vectors.
@@ -271,6 +271,9 @@ impl Index<usize> for Vec3i {
     
     /// Index notation for acessing components of a vector.
     ///
+    /// Caveat: due to language constraints, index-based accessors are slower than corresponding
+    /// method-based accessors for SIMD implementation.
+    ///
     /// # Examples
     ///
     /// ```
@@ -291,6 +294,34 @@ impl Index<usize> for Vec3i {
     }
 }
 
+impl IndexMut<usize> for Vec3i {
+
+    /// Index notation for mutating components of a vector.
+    ///
+    /// Caveat: due to language constraints, index-based accessors are slower than corresponding
+    /// method-based accessors for SIMD implementation.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// #[macro_use] extern crate vexyz_math;
+    /// use vexyz_math::*;
+    ///
+    /// # fn main() {
+    /// let mut u = ivec3!(20, 30, 40);
+    /// u[0] = 2; u[1] = 3; u[2] = 4;
+    /// assert_eq!(u, ivec3!(2, 3, 4));
+    /// # }
+    /// ```
+    ///
+    /// # Panics
+    ///
+    /// Will panic if the index is greater than 2.
+    #[inline(always)] fn index_mut<'a>(&'a mut self, i: usize) -> &'a mut i32 {
+        &mut self.data[i]
+    }
+}
+
 impl<'a, 'b> Add<&'b Vec3i> for &'a Vec3i {
     type Output = Vec3i;
 
@@ -308,7 +339,7 @@ impl<'a, 'b> Add<&'b Vec3i> for &'a Vec3i {
     /// # }
     /// ```
     fn add(self, rhs: &Vec3i) -> Vec3i {
-        Vec3i::new(self[0] + rhs[0], self[1] + rhs[1], self[2] + rhs[2])
+        Vec3i::new(self.x() + rhs.x(), self.y() + rhs.y(), self.z() + rhs.z())
     }
 }
 
@@ -356,7 +387,7 @@ impl<'a> Add<i32> for &'a Vec3i {
     /// # }
     /// ```
     fn add(self, rhs: i32) -> Vec3i {
-        Vec3i::new(self[0] + rhs, self[1] + rhs, self[2] + rhs)
+        Vec3i::new(self.x() + rhs, self.y() + rhs, self.z() + rhs)
     }
 }
 
@@ -387,7 +418,7 @@ impl<'a, 'b> Sub<&'b Vec3i> for &'a Vec3i {
     /// # }
     /// ```
     fn sub(self, rhs: &Vec3i) -> Vec3i {
-        Vec3i::new(self[0] - rhs[0], self[1] - rhs[1], self[2] - rhs[2])
+        Vec3i::new(self.x() - rhs.x(), self.y() - rhs.y(), self.z() - rhs.z())
     }
 }
 
@@ -435,7 +466,7 @@ impl<'a> Sub<i32> for &'a Vec3i {
     /// # }
     /// ```
     fn sub(self, rhs: i32) -> Vec3i {
-        Vec3i::new(self[0] - rhs, self[1] - rhs, self[2] - rhs)
+        Vec3i::new(self.x() - rhs, self.y() - rhs, self.z() - rhs)
     }
 }
 
@@ -465,7 +496,7 @@ impl<'a, 'b> Mul<&'b Vec3i> for &'a Vec3i {
     /// # }
     /// ```
     fn mul(self, rhs: &Vec3i) -> Vec3i {
-        Vec3i::new(self[0] * rhs[0], self[1] * rhs[1], self[2] * rhs[2])
+        Vec3i::new(self.x() * rhs.x(), self.y() * rhs.y(), self.z() * rhs.z())
     }
 }
 
@@ -513,7 +544,7 @@ impl<'a> Mul<i32> for &'a Vec3i {
     /// # }
     /// ```
     fn mul(self, rhs: i32) -> Vec3i {
-        Vec3i::new(self[0] * rhs, self[1] * rhs, self[2] * rhs)
+        Vec3i::new(self.x() * rhs, self.y() * rhs, self.z() * rhs)
     }
 }
 
@@ -544,7 +575,7 @@ impl<'a, 'b> Div<&'b Vec3i> for &'a Vec3i {
     /// # }
     /// ```
     fn div(self, rhs: &Vec3i) -> Vec3i {
-        Vec3i::new(self[0] / rhs[0], self[1] / rhs[1], self[2] / rhs[2])
+        Vec3i::new(self.x() / rhs.x(), self.y() / rhs.y(), self.z() / rhs.z())
     }
 }
 
@@ -592,7 +623,7 @@ impl<'a> Div<i32> for &'a Vec3i {
     /// # }
     /// ```
     fn div(self, rhs: i32) -> Vec3i {
-        Vec3i::new(self[0] / rhs, self[1] / rhs, self[2] / rhs)
+        Vec3i::new(self.x() / rhs, self.y() / rhs, self.z() / rhs)
     }
 }
 
@@ -622,7 +653,7 @@ impl<'a> Neg for &'a Vec3i {
     /// # }
     /// ```
     fn neg(self) -> Vec3i {
-        Vec3i::new(-self[0], -self[1], -self[2])
+        Vec3i::new(-self.x(), -self.y(), -self.z())
     }
 }
 

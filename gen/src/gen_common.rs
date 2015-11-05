@@ -1,11 +1,14 @@
 use std::fmt::{Display, Error, Formatter};
 
+pub static XYZW: [&'static str; 4] = ["x", "y", "z", "w"];
+pub static ABCD: [&'static str; 4] = ["a", "b", "c", "d"];
+
 pub fn vec_getter(i: usize) -> String {
-    format!("[{}]", i)
+    format!(".{}()", XYZW[i])
 }
 
 pub fn quat_getter(i: usize) -> String {
-    format!("[{}]", i)
+    format!(".{}()", ABCD[i])
 }
 
 pub fn mat_getter(i: usize) -> String {
@@ -21,14 +24,14 @@ pub fn coerce(tpe: Type, arg: &str) -> String {
     }
     else if arg.contains(".") || arg.to_lowercase().contains("e") {
         match tpe {
-            Type::Bool | Type::I32 => panic!("Trying to coerce wrong type: {}.", tpe),
-            Type::F64 => arg.to_string(),
+            Type::Bool | Type::U32 | Type::I32 => panic!("Trying to coerce wrong type: {}.", tpe),
+            Type::F32 | Type::F64 => arg.to_string(),
         }
     }
     else {
         match tpe {
-            Type::Bool | Type::I32 => arg.to_string(),
-            Type::F64 => format!("{}.0", arg),
+            Type::Bool | Type::U32 | Type::I32 => arg.to_string(),
+            Type::F32 | Type::F64 => format!("{}.0", arg),
         }
     }
 }
@@ -36,7 +39,9 @@ pub fn coerce(tpe: Type, arg: &str) -> String {
 #[derive(Clone, Copy)]
 pub enum Type {
     Bool,
+    U32,
     I32,
+    F32,
     F64,
 }
 
@@ -44,8 +49,10 @@ impl Type {
     pub fn worded(&self) -> String {
         match *self {
             Type::Bool => "boolean".to_string(),
+            Type::U32 => "unsigned integer".to_string(),
             Type::I32 => "integer".to_string(),
-            Type::F64 => "floating point".to_string(),
+            Type::F32 => "32 bit floating point".to_string(),
+            Type::F64 => "64 bit floating point".to_string(),
         }
     }
 }
@@ -54,7 +61,9 @@ impl Display for Type {
     fn fmt(&self, formatter: &mut Formatter) -> Result<(), Error> {
         match *self {
             Type::Bool => write!(formatter, "bool"),
+            Type::U32 => write!(formatter, "u32"),
             Type::I32 => write!(formatter, "i32"),
+            Type::F32 => write!(formatter, "f32"),
             Type::F64 => write!(formatter, "f64"),
         }
     }

@@ -46,7 +46,7 @@ impl Vec2i {
     /// # }
     /// ```
     pub fn sum(&self) -> i32 {
-        self[0] + self[1]
+        self.x() + self.y()
     }
     
     /// Performs `abs()` on each component, producing a new vector.
@@ -63,7 +63,7 @@ impl Vec2i {
     /// # }
     /// ```
     pub fn abs(&self) -> Vec2i {
-        Vec2i::new(self[0].abs(), self[1].abs())
+        Vec2i::new(self.x().abs(), self.y().abs())
     }
 }
 
@@ -100,7 +100,7 @@ impl<'a> Vec2iOps<&'a Vec2i> for Vec2i {
     /// # }
     /// ```
     fn less_than(&self, rhs: &Vec2i) -> Vec2b {
-        Vec2b::new(self[0] < rhs[0], self[1] < rhs[1])
+        Vec2b::new(self.x() < rhs.x(), self.y() < rhs.y())
     }
 
     /// Performs component-wise numerical `less than or equal` comparision of two vectors,
@@ -119,7 +119,7 @@ impl<'a> Vec2iOps<&'a Vec2i> for Vec2i {
     /// # }
     /// ```
     fn less_than_equal(&self, rhs: &Vec2i) -> Vec2b {
-        Vec2b::new(self[0] <= rhs[0], self[1] <= rhs[1])
+        Vec2b::new(self.x() <= rhs.x(), self.y() <= rhs.y())
     }
 
     /// Performs component-wise numerical `greater than` comparision of two vectors,
@@ -138,7 +138,7 @@ impl<'a> Vec2iOps<&'a Vec2i> for Vec2i {
     /// # }
     /// ```
     fn greater_than(&self, rhs: &Vec2i) -> Vec2b {
-        Vec2b::new(self[0] > rhs[0], self[1] > rhs[1])
+        Vec2b::new(self.x() > rhs.x(), self.y() > rhs.y())
     }
 
     /// Performs component-wise numerical `greater than or equal` comparision of two vectors,
@@ -157,7 +157,7 @@ impl<'a> Vec2iOps<&'a Vec2i> for Vec2i {
     /// # }
     /// ```
     fn greater_than_equals(&self, rhs: &Vec2i) -> Vec2b {
-        Vec2b::new(self[0] >= rhs[0], self[1] >= rhs[1])
+        Vec2b::new(self.x() >= rhs.x(), self.y() >= rhs.y())
     }
 
     /// Performs component-wise numerical `equal` comparision of two vectors,
@@ -176,7 +176,7 @@ impl<'a> Vec2iOps<&'a Vec2i> for Vec2i {
     /// # }
     /// ```
     fn equal(&self, rhs: &Vec2i) -> Vec2b {
-        Vec2b::new(self[0] == rhs[0], self[1] == rhs[1])
+        Vec2b::new(self.x() == rhs.x(), self.y() == rhs.y())
     }
 
     /// Performs component-wise numerical `not equal` comparision of two vectors,
@@ -195,7 +195,7 @@ impl<'a> Vec2iOps<&'a Vec2i> for Vec2i {
     /// # }
     /// ```
     fn not_equal(&self, rhs: &Vec2i) -> Vec2b {
-        Vec2b::new(self[0] != rhs[0], self[1] != rhs[1])
+        Vec2b::new(self.x() != rhs.x(), self.y() != rhs.y())
     }
 
     /// Returns dot product of two vectors.
@@ -265,6 +265,9 @@ impl Index<usize> for Vec2i {
     
     /// Index notation for acessing components of a vector.
     ///
+    /// Caveat: due to language constraints, index-based accessors are slower than corresponding
+    /// method-based accessors for SIMD implementation.
+    ///
     /// # Examples
     ///
     /// ```
@@ -285,6 +288,34 @@ impl Index<usize> for Vec2i {
     }
 }
 
+impl IndexMut<usize> for Vec2i {
+
+    /// Index notation for mutating components of a vector.
+    ///
+    /// Caveat: due to language constraints, index-based accessors are slower than corresponding
+    /// method-based accessors for SIMD implementation.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// #[macro_use] extern crate vexyz_math;
+    /// use vexyz_math::*;
+    ///
+    /// # fn main() {
+    /// let mut u = ivec2!(20, 30);
+    /// u[0] = 2; u[1] = 3;
+    /// assert_eq!(u, ivec2!(2, 3));
+    /// # }
+    /// ```
+    ///
+    /// # Panics
+    ///
+    /// Will panic if the index is greater than 1.
+    #[inline(always)] fn index_mut<'a>(&'a mut self, i: usize) -> &'a mut i32 {
+        &mut self.data[i]
+    }
+}
+
 impl<'a, 'b> Add<&'b Vec2i> for &'a Vec2i {
     type Output = Vec2i;
 
@@ -302,7 +333,7 @@ impl<'a, 'b> Add<&'b Vec2i> for &'a Vec2i {
     /// # }
     /// ```
     fn add(self, rhs: &Vec2i) -> Vec2i {
-        Vec2i::new(self[0] + rhs[0], self[1] + rhs[1])
+        Vec2i::new(self.x() + rhs.x(), self.y() + rhs.y())
     }
 }
 
@@ -350,7 +381,7 @@ impl<'a> Add<i32> for &'a Vec2i {
     /// # }
     /// ```
     fn add(self, rhs: i32) -> Vec2i {
-        Vec2i::new(self[0] + rhs, self[1] + rhs)
+        Vec2i::new(self.x() + rhs, self.y() + rhs)
     }
 }
 
@@ -381,7 +412,7 @@ impl<'a, 'b> Sub<&'b Vec2i> for &'a Vec2i {
     /// # }
     /// ```
     fn sub(self, rhs: &Vec2i) -> Vec2i {
-        Vec2i::new(self[0] - rhs[0], self[1] - rhs[1])
+        Vec2i::new(self.x() - rhs.x(), self.y() - rhs.y())
     }
 }
 
@@ -429,7 +460,7 @@ impl<'a> Sub<i32> for &'a Vec2i {
     /// # }
     /// ```
     fn sub(self, rhs: i32) -> Vec2i {
-        Vec2i::new(self[0] - rhs, self[1] - rhs)
+        Vec2i::new(self.x() - rhs, self.y() - rhs)
     }
 }
 
@@ -459,7 +490,7 @@ impl<'a, 'b> Mul<&'b Vec2i> for &'a Vec2i {
     /// # }
     /// ```
     fn mul(self, rhs: &Vec2i) -> Vec2i {
-        Vec2i::new(self[0] * rhs[0], self[1] * rhs[1])
+        Vec2i::new(self.x() * rhs.x(), self.y() * rhs.y())
     }
 }
 
@@ -507,7 +538,7 @@ impl<'a> Mul<i32> for &'a Vec2i {
     /// # }
     /// ```
     fn mul(self, rhs: i32) -> Vec2i {
-        Vec2i::new(self[0] * rhs, self[1] * rhs)
+        Vec2i::new(self.x() * rhs, self.y() * rhs)
     }
 }
 
@@ -538,7 +569,7 @@ impl<'a, 'b> Div<&'b Vec2i> for &'a Vec2i {
     /// # }
     /// ```
     fn div(self, rhs: &Vec2i) -> Vec2i {
-        Vec2i::new(self[0] / rhs[0], self[1] / rhs[1])
+        Vec2i::new(self.x() / rhs.x(), self.y() / rhs.y())
     }
 }
 
@@ -586,7 +617,7 @@ impl<'a> Div<i32> for &'a Vec2i {
     /// # }
     /// ```
     fn div(self, rhs: i32) -> Vec2i {
-        Vec2i::new(self[0] / rhs, self[1] / rhs)
+        Vec2i::new(self.x() / rhs, self.y() / rhs)
     }
 }
 
@@ -616,7 +647,7 @@ impl<'a> Neg for &'a Vec2i {
     /// # }
     /// ```
     fn neg(self) -> Vec2i {
-        Vec2i::new(-self[0], -self[1])
+        Vec2i::new(-self.x(), -self.y())
     }
 }
 

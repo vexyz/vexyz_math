@@ -1,5 +1,5 @@
 mod bvec2;
-mod f64;
+mod f32;
 mod bvec3;
 mod bvec4;
 mod ivec2;
@@ -27,7 +27,7 @@ pub use mat2::Mat2;
 pub use mat3::Mat3;
 pub use mat4::Mat4;
 
-pub use f64::FloatOps;
+pub use f32::FloatOps;
 //pub use bvec2::Vec2bOps;
 //pub use bvec3::Vec3bOps;
 //pub use bvec4::Vec4bOps;

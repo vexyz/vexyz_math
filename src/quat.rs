@@ -23,25 +23,25 @@ use Vec4Ops;
 /// In addition to rotation and multiplication, Vexyz provides a variety of component-wise
 /// quaternion operators and methods.
 #[derive(Debug, PartialEq, Copy, Clone)]
-pub struct Quat { data: [f64; 4] }
+pub struct Quat { data: [f32; 4] }
 
 impl Quat {
     /// Constructs a new `Quat`.
-    pub fn new(a: f64, b: f64, c: f64, d: f64) -> Self {
+    pub fn new(a: f32, b: f32, c: f32, d: f32) -> Self {
          Quat { data: [a, b, c, d] }
     }
     
     /// Component accessor, returns the 1st component of the quaternion.
-    #[inline(always)] pub fn a(&self) -> f64 { self[0] }
+    #[inline(always)] pub fn a(&self) -> f32 { self[0] }
 
     /// Component accessor, returns the 2nd component of the quaternion.
-    #[inline(always)] pub fn b(&self) -> f64 { self[1] }
+    #[inline(always)] pub fn b(&self) -> f32 { self[1] }
 
     /// Component accessor, returns the 3rd component of the quaternion.
-    #[inline(always)] pub fn c(&self) -> f64 { self[2] }
+    #[inline(always)] pub fn c(&self) -> f32 { self[2] }
 
     /// Component accessor, returns the 4th component of the quaternion.
-    #[inline(always)] pub fn d(&self) -> f64 { self[3] }
+    #[inline(always)] pub fn d(&self) -> f32 { self[3] }
     
     /// Returns the sum of vector components.
     ///
@@ -56,8 +56,8 @@ impl Quat {
     /// assert_eq!(u.sum(), 20.0 + 30.0 + 40.0 + 50.0);
     /// # }
     /// ```
-    pub fn sum(&self) -> f64 {
-        self[0] + self[1] + self[2] + self[3]
+    pub fn sum(&self) -> f32 {
+        self.a() + self.b() + self.c() + self.d()
     }
     
     /// Performs `abs()` on each component, producing a new vector.
@@ -74,7 +74,7 @@ impl Quat {
     /// # }
     /// ```
     pub fn abs(&self) -> Quat {
-        Quat::new(self[0].abs(), self[1].abs(), self[2].abs(), self[3].abs())
+        Quat::new(self.a().abs(), self.b().abs(), self.c().abs(), self.d().abs())
     }
     
     /// Returns combined rotation of the `lhs` quaternion followed by rotation around `x` axis.
@@ -93,17 +93,17 @@ impl Quat {
     /// use vexyz_math::*;
     ///
     /// # fn main() {
-    /// let q = quat!().rotate_x(90_f64.to_radians());
+    /// let q = quat!().rotate_x(90_f32.to_rad());
     /// let u = q.rotate_vec(vec3!(1, 1, 0));
-    /// assert!(u.approx_equal(vec3!(1, 0, 1), 1e-8));
+    /// assert!(u.approx_equal(vec3!(1, 0, 1), 1e-6));
     /// # }
     /// ```
-    pub fn rotate_x(&self, rads: f64) -> Quat {
+    pub fn rotate_x(&self, rads: f32) -> Quat {
         let half_angle = rads*0.5;
         let qa = half_angle.cos();
         let qb = half_angle.sin();
     
-        self*qa + Quat::new(-self[1], self[0], -self[3], self[2])*qb
+        self*qa + Quat::new(-self.b(), self.a(), -self.d(), self.c())*qb
     }
     
     /// Returns combined rotation of the `lhs` quaternion followed by rotation around `y` axis.
@@ -122,17 +122,17 @@ impl Quat {
     /// use vexyz_math::*;
     ///
     /// # fn main() {
-    /// let q = quat!().rotate_y(90_f64.to_radians());
+    /// let q = quat!().rotate_y(90_f32.to_rad());
     /// let u = q.rotate_vec(vec3!(1, 1, 0));
-    /// assert!(u.approx_equal(vec3!(0, 1, -1), 1e-8));
+    /// assert!(u.approx_equal(vec3!(0, 1, -1), 1e-6));
     /// # }
     /// ```
-    pub fn rotate_y(&self, rads: f64) -> Quat {
+    pub fn rotate_y(&self, rads: f32) -> Quat {
         let half_angle = rads*0.5;
         let qa = half_angle.cos();
         let qc = half_angle.sin();
     
-        self*qa + Quat::new(-self[2], self[3], self[0], -self[1])*qc
+        self*qa + Quat::new(-self.c(), self.d(), self.a(), -self.b())*qc
     }
     
     /// Returns combined rotation of the `lhs` quaternion followed by rotation around `z` axis.
@@ -151,17 +151,17 @@ impl Quat {
     /// use vexyz_math::*;
     ///
     /// # fn main() {
-    /// let q = quat!().rotate_z(90_f64.to_radians());
+    /// let q = quat!().rotate_z(90_f32.to_rad());
     /// let u = q.rotate_vec(vec3!(0, 1, 1));
-    /// assert!(u.approx_equal(vec3!(-1, 0, 1), 1e-8));
+    /// assert!(u.approx_equal(vec3!(-1, 0, 1), 1e-6));
     /// # }
     /// ```
-    pub fn rotate_z(&self, rads: f64) -> Quat {
+    pub fn rotate_z(&self, rads: f32) -> Quat {
         let half_angle = rads*0.5;
         let qa = half_angle.cos();
         let qd = half_angle.sin();
     
-        self*qa + Quat::new(-self[3], -self[2], self[1], self[0])*qd
+        self*qa + Quat::new(-self.d(), -self.c(), self.b(), self.a())*qd
     }
     
     /// Extracts quaternion components into a vector: `Quat(a, b, c, d) -> Vec4(b, c, d, a)`.
@@ -193,10 +193,10 @@ impl Quat {
     ///
     /// # fn main() {
     /// let u = quat!(20, 30, 40, 50);
-    /// assert_eq!(u.norm(), ((20*20 + 30*30 + 40*40 + 50*50) as f64).sqrt());
+    /// assert_eq!(u.norm(), ((20*20 + 30*30 + 40*40 + 50*50) as f32).sqrt());
     /// # }
     /// ```
-    pub fn norm(&self) -> f64 {
+    pub fn norm(&self) -> f32 {
         self.as_vec4().length()
     }
     
@@ -210,7 +210,7 @@ impl Quat {
     ///
     /// # fn main() {
     /// let q = quat!(20, 30, 40, 50);
-    /// assert!(q.normalize().norm().approx_equal(1.0, 1e-8));
+    /// assert!(q.normalize().norm().approx_equal(1.0, 1e-6));
     /// # }
     /// ```
     pub fn normalize(&self) -> Quat {
@@ -231,7 +231,7 @@ impl Quat {
     /// # }
     /// ```
     pub fn conjugate(&self) -> Quat {
-        Quat::new(self[0], -self[1], -self[2], -self[3])
+        Quat::new(self.a(), -self.b(), -self.c(), -self.d())
     }
     
     /// Inverts the quaternion. When dealing with unit quaternions, use `conjugate` instead.
@@ -243,10 +243,10 @@ impl Quat {
     /// use vexyz_math::*;
     ///
     /// # fn main() {
-    /// let q = quat!().rotate_x(90_f64.to_radians());
+    /// let q = quat!().rotate_x(90_f32.to_rad());
     /// let u = q.rotate_vec(vec3!(1, 1, 0));
     /// let v = q.inverse().rotate_vec(u);
-    /// assert!(v.approx_equal(vec3!(1, 1, 0), 1e-8));
+    /// assert!(v.approx_equal(vec3!(1, 1, 0), 1e-6));
     /// # }
     /// ```
     pub fn inverse(&self) -> Quat {
@@ -257,7 +257,7 @@ impl Quat {
 }
 
 pub trait QuatQuatOps<Rhs> {
-    fn approx_equal(&self, rhs: Rhs, eps: f64) -> bool;
+    fn approx_equal(&self, rhs: Rhs, eps: f32) -> bool;
 
     fn rotate(&self, rhs: Rhs) -> Quat;
 }
@@ -273,11 +273,11 @@ impl<'a> QuatQuatOps<&'a Quat> for Quat {
     ///
     /// # fn main() {
     /// let q = quat!(20, 30, 40, 50);
-    /// assert!(q.approx_equal(q + quat!(1e-9, 1e-9, 1e-9, 1e-9), 1e-8));
-    /// assert!(!q.approx_equal(q + quat!(1e-8, 1e-8, 1e-8, 1e-8), 1e-8));
+    /// assert!(q.approx_equal(q + quat!(1e-7, 1e-7, 1e-7, 1e-7), 1e-6));
+    /// assert!(!q.approx_equal(q + quat!(1e-6, 1e-6, 1e-6, 1e-6), 1e-6));
     /// # }
     /// ```
-    fn approx_equal(&self, rhs: &Quat, eps: f64) -> bool {
+    fn approx_equal(&self, rhs: &Quat, eps: f32) -> bool {
         self.as_vec4().approx_equal(rhs.as_vec4(), eps)
     }
 
@@ -301,11 +301,11 @@ impl<'a> QuatQuatOps<&'a Quat> for Quat {
     /// use vexyz_math::*;
     ///
     /// # fn main() {
-    /// let q0 = quat!().rotate_x(90_f64.to_radians());
-    /// let q1 = quat!().rotate_y(90_f64.to_radians());
+    /// let q0 = quat!().rotate_x(90_f32.to_rad());
+    /// let q1 = quat!().rotate_y(90_f32.to_rad());
     /// let q = q0.rotate(q1);
     /// let u = q.rotate_vec(vec3!(1, 1, 0));
-    /// assert!(u.approx_equal(vec3!(1, 0, -1), 1e-8));
+    /// assert!(u.approx_equal(vec3!(1, 0, -1), 1e-6));
     /// # }
     /// ```
     fn rotate(&self, rhs: &Quat) -> Quat {
@@ -315,7 +315,7 @@ impl<'a> QuatQuatOps<&'a Quat> for Quat {
 
 impl QuatQuatOps<Quat> for Quat {
     /// Shorthand for `lhs.approx_equals(&rhs, eps)`.
-    #[inline(always)] fn approx_equal(&self, rhs: Quat, eps: f64) -> bool {
+    #[inline(always)] fn approx_equal(&self, rhs: Quat, eps: f32) -> bool {
         self.approx_equal(&rhs, eps)
     }
 
@@ -340,21 +340,21 @@ impl<'a> QuatVec3Ops<&'a Vec3> for Quat {
     /// use vexyz_math::*;
     ///
     /// # fn main() {
-    /// let q = quat!().rotate_y(90_f64.to_radians());
+    /// let q = quat!().rotate_y(90_f32.to_rad());
     /// let u = q.rotate_vec(vec3!(1, 1, 0));
-    /// assert!(u.approx_equal(vec3!(0, 1, -1), 1e-8));
+    /// assert!(u.approx_equal(vec3!(0, 1, -1), 1e-6));
     /// # }
     /// ```
     fn rotate_vec(&self, rhs: &Vec3) -> Vec3 {
-        let t1 = self[0]*self[1];
-        let t2 = self[0]*self[2];
-        let t3 = self[0]*self[3];
-        let t4 = -self[1]*self[1];
-        let t5 = self[1]*self[2];
-        let t6 = self[1]*self[3];
-        let t7 = -self[2]*self[2];
-        let t8 = self[2]*self[3];
-        let t9 = -self[3]*self[3];
+        let t1 = self.a()*self.b();
+        let t2 = self.a()*self.c();
+        let t3 = self.a()*self.d();
+        let t4 = -self.b()*self.b();
+        let t5 = self.b()*self.c();
+        let t6 = self.b()*self.d();
+        let t7 = -self.c()*self.c();
+        let t8 = self.c()*self.d();
+        let t9 = -self.d()*self.d();
     
         Vec3::new(
               Vec3::new(t7 + t9, t5 - t3, t2 + t6).dot(rhs),
@@ -378,9 +378,12 @@ impl Display for Quat {
 }
 
 impl Index<usize> for Quat {
-    type Output = f64;
+    type Output = f32;
     
     /// Index notation for acessing components of a quaternion.
+    ///
+    /// Caveat: due to language constraints, index-based accessors are slower than corresponding
+    /// method-based accessors for SIMD implementation.
     ///
     /// # Examples
     ///
@@ -397,8 +400,36 @@ impl Index<usize> for Quat {
     /// # Panics
     ///
     /// Will panic if the index is greater than 3.
-    #[inline(always)] fn index<'a>(&'a self, i: usize) -> &'a f64 {
+    #[inline(always)] fn index<'a>(&'a self, i: usize) -> &'a f32 {
         &self.data[i]
+    }
+}
+
+impl IndexMut<usize> for Quat {
+
+    /// Index notation for mutating components of a quaternion.
+    ///
+    /// Caveat: due to language constraints, index-based accessors are slower than corresponding
+    /// method-based accessors for SIMD implementation.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// #[macro_use] extern crate vexyz_math;
+    /// use vexyz_math::*;
+    ///
+    /// # fn main() {
+    /// let mut q = quat!(20, 30, 40, 50);
+    /// q[0] = 2.0; q[1] = 3.0; q[2] = 4.0; q[3] = 5.0;
+    /// assert_eq!(q, quat!(2, 3, 4, 5));
+    /// # }
+    /// ```
+    ///
+    /// # Panics
+    ///
+    /// Will panic if the index is greater than 3.
+    #[inline(always)] fn index_mut<'a>(&'a mut self, i: usize) -> &'a mut f32 {
+        &mut self.data[i]
     }
 }
 
@@ -419,7 +450,7 @@ impl<'a, 'b> Add<&'b Quat> for &'a Quat {
     /// # }
     /// ```
     fn add(self, rhs: &Quat) -> Quat {
-        Quat::new(self[0] + rhs[0], self[1] + rhs[1], self[2] + rhs[2], self[3] + rhs[3])
+        Quat::new(self.a() + rhs.a(), self.b() + rhs.b(), self.c() + rhs.c(), self.d() + rhs.d())
     }
 }
 
@@ -450,7 +481,7 @@ impl Add<Quat> for Quat {
     }
 }
 
-impl<'a> Add<f64> for &'a Quat {
+impl<'a> Add<f32> for &'a Quat {
     type Output = Quat;
     
     /// Adds a scalar to each component of a quaternion, producing a new quaternion.
@@ -466,16 +497,16 @@ impl<'a> Add<f64> for &'a Quat {
     /// assert_eq!(q, quat!(20 + 2, 30 + 2, 40 + 2, 50 + 2));
     /// # }
     /// ```
-    fn add(self, rhs: f64) -> Quat {
-        Quat::new(self[0] + rhs, self[1] + rhs, self[2] + rhs, self[3] + rhs)
+    fn add(self, rhs: f32) -> Quat {
+        Quat::new(self.a() + rhs, self.b() + rhs, self.c() + rhs, self.d() + rhs)
     }
 }
 
-impl Add<f64> for Quat {
+impl Add<f32> for Quat {
     type Output = Quat;
     
     /// Shorthand for `&lhs + rhs`.
-    #[inline(always)] fn add(self, rhs: f64) -> Quat {
+    #[inline(always)] fn add(self, rhs: f32) -> Quat {
         &self + rhs
     }
 }
@@ -498,7 +529,7 @@ impl<'a, 'b> Sub<&'b Quat> for &'a Quat {
     /// # }
     /// ```
     fn sub(self, rhs: &Quat) -> Quat {
-        Quat::new(self[0] - rhs[0], self[1] - rhs[1], self[2] - rhs[2], self[3] - rhs[3])
+        Quat::new(self.a() - rhs.a(), self.b() - rhs.b(), self.c() - rhs.c(), self.d() - rhs.d())
     }
 }
 
@@ -529,7 +560,7 @@ impl Sub<Quat> for Quat {
     }
 }
 
-impl<'a> Sub<f64> for &'a Quat {
+impl<'a> Sub<f32> for &'a Quat {
     type Output = Quat;
     
     /// Subtracts a scalar from each component of a quaternion, producing a new quaternion.
@@ -545,16 +576,16 @@ impl<'a> Sub<f64> for &'a Quat {
     /// assert_eq!(q, quat!(20 - 2, 30 - 2, 40 - 2, 50 - 2));
     /// # }
     /// ```
-    fn sub(self, rhs: f64) -> Quat {
-        Quat::new(self[0] - rhs, self[1] - rhs, self[2] - rhs, self[3] - rhs)
+    fn sub(self, rhs: f32) -> Quat {
+        Quat::new(self.a() - rhs, self.b() - rhs, self.c() - rhs, self.d() - rhs)
     }
 }
 
-impl Sub<f64> for Quat {
+impl Sub<f32> for Quat {
     type Output = Quat;
     
     /// Shorthand for `&lhs - rhs`.
-    #[inline(always)] fn sub(self, rhs: f64) -> Quat {
+    #[inline(always)] fn sub(self, rhs: f32) -> Quat {
         &self - rhs
     }
 }
@@ -582,17 +613,17 @@ impl<'a, 'b> Mul<&'b Quat> for &'a Quat {
     /// use vexyz_math::*;
     ///
     /// # fn main() {
-    /// let q0 = quat!().rotate_x(90_f64.to_radians());
-    /// let q1 = quat!().rotate_y(90_f64.to_radians());
+    /// let q0 = quat!().rotate_x(90_f32.to_rad());
+    /// let q1 = quat!().rotate_y(90_f32.to_rad());
     /// assert_eq!(q1*q0, q0.rotate(q1));
     /// # }
     /// ```
     fn mul(self, rhs: &Quat) -> Quat {
         Quat::new(
-            self[0]*rhs[0] - self[1]*rhs[1] - self[2]*rhs[2] - self[3]*rhs[3],
-            self[0]*rhs[1] + self[1]*rhs[0] + self[2]*rhs[3] - self[3]*rhs[2],
-            self[0]*rhs[2] - self[1]*rhs[3] + self[2]*rhs[0] + self[3]*rhs[1],
-            self[0]*rhs[3] + self[1]*rhs[2] - self[2]*rhs[1] + self[3]*rhs[0],
+            self.a()*rhs.a() - self.b()*rhs.b() - self.c()*rhs.c() - self.d()*rhs.d(),
+            self.a()*rhs.b() + self.b()*rhs.a() + self.c()*rhs.d() - self.d()*rhs.c(),
+            self.a()*rhs.c() - self.b()*rhs.d() + self.c()*rhs.a() + self.d()*rhs.b(),
+            self.a()*rhs.d() + self.b()*rhs.c() - self.c()*rhs.b() + self.d()*rhs.a(),
         )
     }
 }
@@ -624,7 +655,7 @@ impl Mul<Quat> for Quat {
     }
 }
 
-impl<'a> Mul<f64> for &'a Quat {
+impl<'a> Mul<f32> for &'a Quat {
     type Output = Quat;
     
     /// Multiplies each component of a quaternion by a scalar, producing a new quaternion.
@@ -640,16 +671,16 @@ impl<'a> Mul<f64> for &'a Quat {
     /// assert_eq!(q, quat!(20 * 2, 30 * 2, 40 * 2, 50 * 2));
     /// # }
     /// ```
-    fn mul(self, rhs: f64) -> Quat {
-        Quat::new(self[0] * rhs, self[1] * rhs, self[2] * rhs, self[3] * rhs)
+    fn mul(self, rhs: f32) -> Quat {
+        Quat::new(self.a() * rhs, self.b() * rhs, self.c() * rhs, self.d() * rhs)
     }
 }
 
-impl Mul<f64> for Quat {
+impl Mul<f32> for Quat {
     type Output = Quat;
     
     /// Shorthand for `&lhs * rhs`.
-    #[inline(always)] fn mul(self, rhs: f64) -> Quat {
+    #[inline(always)] fn mul(self, rhs: f32) -> Quat {
         &self * rhs
     }
 }
@@ -672,7 +703,7 @@ impl<'a, 'b> Div<&'b Quat> for &'a Quat {
     /// # }
     /// ```
     fn div(self, rhs: &Quat) -> Quat {
-        Quat::new(self[0] / rhs[0], self[1] / rhs[1], self[2] / rhs[2], self[3] / rhs[3])
+        Quat::new(self.a() / rhs.a(), self.b() / rhs.b(), self.c() / rhs.c(), self.d() / rhs.d())
     }
 }
 
@@ -703,7 +734,7 @@ impl Div<Quat> for Quat {
     }
 }
 
-impl<'a> Div<f64> for &'a Quat {
+impl<'a> Div<f32> for &'a Quat {
     type Output = Quat;
     
     /// Divides each component of a quaternion by a scalar, producing a new quaternion.
@@ -719,16 +750,16 @@ impl<'a> Div<f64> for &'a Quat {
     /// assert_eq!(q, quat!(20 / 2, 30 / 2, 40 / 2, 50 / 2));
     /// # }
     /// ```
-    fn div(self, rhs: f64) -> Quat {
-        Quat::new(self[0] / rhs, self[1] / rhs, self[2] / rhs, self[3] / rhs)
+    fn div(self, rhs: f32) -> Quat {
+        Quat::new(self.a() / rhs, self.b() / rhs, self.c() / rhs, self.d() / rhs)
     }
 }
 
-impl Div<f64> for Quat {
+impl Div<f32> for Quat {
     type Output = Quat;
     
     /// Shorthand for `&lhs / rhs`.
-    #[inline(always)] fn div(self, rhs: f64) -> Quat {
+    #[inline(always)] fn div(self, rhs: f32) -> Quat {
         &self / rhs
     }
 }
@@ -750,7 +781,7 @@ impl<'a> Neg for &'a Quat {
     /// # }
     /// ```
     fn neg(self) -> Quat {
-        Quat::new(-self[0], -self[1], -self[2], -self[3])
+        Quat::new(-self.a(), -self.b(), -self.c(), -self.d())
     }
 }
 
@@ -796,9 +827,9 @@ macro_rules! quat {
         Quat::new(1.0, 0.0, 0.0, 0.0)
     }};
     ($a:expr, $b:expr, $c:expr, $d:expr) => {{
-        Quat::new($a as f64, $b as f64, $c as f64, $d as f64)
+        Quat::new($a as f32, $b as f32, $c as f32, $d as f32)
     }};
     ($a:expr, $b:expr, $c:expr, $d:expr,) => {{
-        Quat::new($a as f64, $b as f64, $c as f64, $d as f64)
+        Quat::new($a as f32, $b as f32, $c as f32, $d as f32)
     }};
 }

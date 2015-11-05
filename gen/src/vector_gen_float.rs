@@ -6,10 +6,10 @@ use vec_common::VecGen;
 pub fn gen_float_vector(n: usize) -> String {
     let gen = &VecGen {
         struct_name: format!("Vec{}", n),
-        tpe: Type::F64,
+        tpe: Type::F32,
         dims: n,
         macro_builder_name: format!("vec{}", n),
-        all_ordinals: &vec_common::XYZW,
+        all_ordinals: &XYZW,
         doc_name: "vector".to_string(),
         val_name: "u".to_string(),
         quaternion_override: false,
@@ -31,16 +31,22 @@ fn template_file(gen: &VecGen) -> String { format! {"\
 
 {op_index}
 
+{op_index_mut}
+
 {template_common_num_ops}
 
 {op_neg}
 
+{op_mul_mat}
+
 {macro_builder}
 ",
-    imports = format!("{}\n{}",
+    imports = vec!{
         vec_common::IMPORTS,
-        format!("use {};", gen.bool_struct_name()),
-    ),
+        "use std::mem;",
+        &format!("use {};", gen.bool_struct_name()),
+        &format!("use Mat{};", gen.dims),
+    }.iter().map(|s| s.to_string()).concat("\n"),
     template_struct = vec_common::template_struct(gen, vec_common::doc_vec_struct(gen)),
     template_struct_impl = vec_common::template_struct_impl(gen, format! {"\
     {template_common_num_postfix}
@@ -58,10 +64,12 @@ fn template_file(gen: &VecGen) -> String { format! {"\
     }),
     trait_display = vec_common::trait_display(gen),
     op_index = vec_common::op_index(gen),
+    op_index_mut = vec_common::op_index_mut(gen),
     template_common_num_ops = vec_common::template_common_num_ops(gen,
         vec_common::op_mul_vec(gen)
     ),
     op_neg = vec_common::op_neg(gen),
+    op_mul_mat = vec_common::template_op_mul_mat(gen),
     macro_builder = vec_common::macro_builder(gen),
 }}
 
@@ -87,7 +95,7 @@ fn fn_length(gen: &VecGen) -> String { format! {"\
     example_args = (0..gen.dims).map(|i| gen.lhs(i)).concat(", "),
     example_res = (0..gen.dims).map(|i|
         format!("{s}*{s}", s = gen.lhs(i))
-    ).mk_string("((", " + ", ") as f64).sqrt()"),
+    ).mk_string("((", " + ", &format!(") as {}).sqrt()", gen.tpe)),
 }}
 
 fn template_float_postfix(gen: &VecGen) -> String { format! {"\

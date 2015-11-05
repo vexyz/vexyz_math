@@ -1,11 +1,11 @@
-use gen_common::*;
 use util::*;
+use gen_common::*;
+use mat_common::MatGen;
 
 pub static IMPORTS: &'static str = "\
 use std::fmt::{Display, Formatter, Result};
 use std::ops::*;";
 
-pub static XYZW: [&'static str; 4] = ["x", "y", "z", "w"];
 static RGBA: [&'static str; 4] = ["r", "g", "b", "a"];
 static DELTAS: [&'static str; 4] = ["-1", "0", "1", "1"];
 
@@ -22,7 +22,7 @@ pub struct VecGen {
 
 impl VecGen {
     pub fn raw_getter(&self, i: usize) -> String {
-        vec_getter(i)
+        format!("[{}]", i)
     }
     
     pub fn getters(&self) -> Box<Iterator<Item = String>> {
@@ -76,14 +76,16 @@ impl VecGen {
     
     pub fn eps_high(&self) -> String {
         match self.tpe {
-            Type::Bool | Type::I32 => panic!("{} does not have eps.", self.tpe),
+            Type::Bool | Type::U32 | Type::I32 => panic!("{} does not have eps.", self.tpe),
+            Type::F32 => "1e-7".to_string(),
             Type::F64 => "1e-9".to_string(),
         }
     }
     
     pub fn eps_low(&self) -> String {
         match self.tpe {
-            Type::Bool | Type::I32 => panic!("{} does not have eps.", self.tpe),
+            Type::Bool | Type::U32 | Type::I32 => panic!("{} does not have eps.", self.tpe),
+            Type::F32 => "1e-6".to_string(),
             Type::F64 => "1e-8".to_string(),
         }
     }
@@ -461,7 +463,7 @@ impl Display for {struct_name} {{
 }}",
     struct_name = gen.struct_name,
     tokens = (0..gen.dims).map(|_| "{}".to_string()).concat(", "),
-    body = (0..gen.dims).map(|i| format!("self{}", vec_getter(i))).concat(", "),
+    body = (0..gen.dims).map(|i| format!("self{}", gen.raw_getter(i))).concat(", "),
 }}
 
 pub fn op_index(gen: &VecGen) -> String { format! {"\
@@ -469,6 +471,9 @@ impl Index<usize> for {struct_name} {{
     type Output = {tpe};
     
     /// Index notation for acessing components of a {doc_name}.
+    ///
+    /// Caveat: due to language constraints, index-based accessors are slower than corresponding
+    /// method-based accessors for SIMD implementation.
     ///
     /// # Examples
     ///
@@ -499,6 +504,48 @@ impl Index<usize> for {struct_name} {{
     example_res = (0..gen.dims).map(|i| format!(
         "{val_name}[{index}]", val_name = gen.val_name, index = i
     )).concat(", "),
+}}
+
+pub fn op_index_mut(gen: &VecGen) -> String { format! {"\
+impl IndexMut<usize> for {struct_name} {{
+
+    /// Index notation for mutating components of a {doc_name}.
+    ///
+    /// Caveat: due to language constraints, index-based accessors are slower than corresponding
+    /// method-based accessors for SIMD implementation.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// #[macro_use] extern crate vexyz_math;
+    /// use vexyz_math::*;
+    ///
+    /// # fn main() {{
+    /// let mut {val_name} = {macro_builder}!({example_args});
+    /// {mutation}
+    /// assert_eq!({val_name}, {macro_builder}!({example_res}));
+    /// # }}
+    /// ```
+    ///
+    /// # Panics
+    ///
+    /// Will panic if the index is greater than {max_index}.
+    #[inline(always)] fn index_mut<'a>(&'a mut self, i: usize) -> &'a mut {tpe} {{
+        &mut self.data[i]
+    }}
+}}",
+    macro_builder = gen.macro_builder_name,
+    struct_name = gen.struct_name,
+    doc_name = gen.doc_name,
+    val_name = gen.val_name,
+    max_index = gen.dims - 1,
+    tpe = gen.tpe,
+    example_args = (0..gen.dims).map(|i| gen.lhs(i)).concat(", "),
+    mutation = (0..gen.dims).map(|i| format!(
+        "{val_name}[{index}] = {rhs}",
+        val_name = gen.val_name, index = i, rhs = coerce(gen.tpe, &gen.rhs(i))
+    )).mk_string("", "; ", ";"),
+    example_res = (0..gen.dims).map(|i| gen.rhs(i)).concat(", "),
 }}
 
 pub fn op_mul_vec(gen: &VecGen) -> String {
@@ -554,6 +601,69 @@ impl<'a, 'b> {trait_name}<&'b {struct_name}> for &'a {struct_name} {{
     )).concat(", "),
     shorthands = shorthands_bin_op_ref(
         trait_name, fn_name, op, &gen.struct_name, &gen.struct_name, &gen.struct_name
+    ),
+}}
+
+pub fn template_op_mul_mat(gen: &VecGen) -> String {
+    let mat_gen = MatGen {
+        struct_name: format!("Mat{}", gen.dims),
+        tpe: Type::F32,
+        col_tpe: gen.struct_name.to_string(),
+        col_builder: gen.macro_builder_name.to_string(),
+        nr_cols: gen.dims,
+        nr_rows: gen.dims,
+        macro_builder_name: format!("mat{}", gen.dims),
+    };
+    format! {"\
+impl<'a, 'b> Mul<&'b {mat_struct_name}> for &'a {struct_name} {{
+    type Output = {struct_name};
+
+    /// Multiplies a transpose of a vector by a matrix, producing a new vector.
+    ///
+    {doc_orthogonal_matrix}
+    ///
+    /// This operator is equivalent to matrix.transpose()*vector. Moreover, if the `rhs` matrix is
+    /// orthogonal, then it is equivalent to matrix.inverse()*vector.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// #[macro_use] extern crate vexyz_math;
+    /// use vexyz_math::*;
+    ///
+    /// # fn main() {{
+    /// let u = {macro_builder}!({example_lhs});
+    /// let m = {mat_macro_builder}!(
+    ///     {example_rhs},
+    /// );
+    /// let v = {macro_builder}!(
+    ///     {example_res},
+    /// );
+    /// assert_eq!(u*m, v);
+    /// # }}
+    /// ```
+    fn mul(self, rhs: &{mat_struct_name}) -> {struct_name} {{
+        {struct_name}::new({body})
+    }}
+}}
+
+{shorthands}",
+    macro_builder = gen.macro_builder_name,
+    struct_name = gen.struct_name,
+    mat_struct_name = mat_gen.struct_name,
+    mat_macro_builder = mat_gen.macro_builder_name,
+    body = (0..gen.dims).map(|i| format!(
+        "self.dot(rhs{mat_getter})", mat_getter = mat_getter(i)
+    )).concat(", "),
+    doc_orthogonal_matrix = mat_gen.doc_orthogonal_matrix(),
+    example_lhs = (0..gen.dims).map(|i| gen.lhs(i)).concat(", "),
+    example_rhs = (0..gen.dims).map(|i| mat_gen.rhs_col(i)).concat(",\n    ///     "),
+    example_res = (0..gen.dims).map(|i| format!(
+        "u.dot({macro_builder}!({rhs_col}))",
+        macro_builder = gen.macro_builder_name, rhs_col = mat_gen.rhs_col(i)
+    )).concat(",\n    ///     "),
+    shorthands = shorthands_bin_op_ref(
+        "Mul", "mul", "*", &gen.struct_name, &mat_gen.struct_name, &gen.struct_name
     ),
 }}
 
